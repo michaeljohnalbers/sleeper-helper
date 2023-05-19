@@ -1,6 +1,8 @@
 mod model;
+mod sleeper;
 
 pub use crate::model::*;
+pub use crate::sleeper::get_player_list;
 
 fn main() {
     let cap = Cap::new(1300);
@@ -36,5 +38,8 @@ fn main() {
     seasons.insert("2023", season);
 
     let json = serde_json::to_string(&seasons).unwrap();
-    println!("{json}")
+    println!("{json}");
+
+    let player_list = sleeper::get_player_list().unwrap();
+    println!("{:#?}", player_list);
 }
