@@ -3,8 +3,9 @@ mod sleeper;
 
 pub use crate::model::*;
 pub use crate::sleeper::get_player_list;
+use std::error::Error;
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let cap = Cap::new(1300);
     let mut season = Season::new(cap);
 
@@ -37,9 +38,18 @@ fn main() {
     let mut seasons = std::collections::HashMap::new();
     seasons.insert("2023", season);
 
-    let json = serde_json::to_string(&seasons).unwrap();
-    println!("{json}");
+    let json = serde_json::to_string(&seasons)?;
+    //println!("{json}");
 
-    let player_list = sleeper::get_player_list().unwrap();
-    println!("{:#?}", player_list);
+    sleeper::get_league_id()?;
+
+    let player_list = sleeper::get_player_list()?;
+    //println!("{:#?}", player_list);
+
+    let player_stats = sleeper::get_player_stats(2022)?;
+
+    sleeper::get_league_scoring_settings(String::from("1"), 2022)?;
+
+    sleeper::get_league_detail()?;
+    Ok(())
 }
