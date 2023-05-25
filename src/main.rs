@@ -2,10 +2,33 @@ mod model;
 mod sleeper;
 
 pub use crate::model::*;
-pub use crate::sleeper::get_player_list;
+use crate::sleeper::Sleeper;
+use chrono::Datelike;
 use std::error::Error;
+use std::{env, process};
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() != 2 {
+        eprintln!("usage: {} [jwt] ", &args[0]);
+        eprintln!("  No JWT supplied");
+        process::exit(1);
+    }
+
+    let jwt = &args[1];
+    let year = chrono::Local::now().year();
+
+    let sleeper = Sleeper::new(jwt.to_string(), year);
+
+    // TODO: include generated-on date for the data
+
+    println!("{:#?}", sleeper.unwrap().roster_details);
+    Ok(())
+}
+
+/// Just to not have warnings.
+fn dummy() -> Result<(), Box<dyn Error>> {
     let cap = Cap::new(1300);
     let mut season = Season::new(cap);
 
@@ -40,16 +63,5 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let json = serde_json::to_string(&seasons)?;
     //println!("{json}");
-
-    sleeper::get_league_id()?;
-
-    let player_list = sleeper::get_player_list()?;
-    //println!("{:#?}", player_list);
-
-    let player_stats = sleeper::get_player_stats(2022)?;
-
-    sleeper::get_league_scoring_settings(String::from("1"), 2022)?;
-
-    sleeper::get_league_detail()?;
     Ok(())
 }
