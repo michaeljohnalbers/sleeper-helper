@@ -15,14 +15,12 @@ impl Cap {
 /// Models the owner of an individual team.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Owner {
-    user_id: String,
     user_name: String,
 }
 
 impl Owner {
-    pub fn new(user_id: &str, user_name: &str) -> Owner {
+    pub fn new(user_name: &str) -> Owner {
         Owner {
-            user_id: user_id.to_string(),
             user_name: user_name.to_string(),
         }
     }
@@ -31,38 +29,34 @@ impl Owner {
 /// An individual player with basic information for determining keeper status.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Player {
-    draft_round_cost: u16,
+    active: bool,
+    draft_round_cost: u32,
     kept: bool,
     name: String,
-    positions: Vec<String>,
-    sleeper_id: String,
+    position: String,
     team: String,
-    total_points: u16,
+    total_points: i32,
 }
 
 impl Player {
-    pub fn new(name: &str, positions: Vec<String>, sleeper_id: &str, team: &str) -> Player {
+    pub fn new(name: &str, active: bool, position: &str, team: &str, total_points: i32) -> Player {
         Player {
+            active,
             draft_round_cost: 0,
             kept: false,
             name: name.to_string(),
-            positions,
-            sleeper_id: sleeper_id.to_string(),
+            position: position.to_string(),
             team: team.to_string(),
-            total_points: 0,
+            total_points,
         }
     }
 
-    pub fn set_draft_round_cost(&mut self, draft_round_cost: u16) {
+    pub fn set_draft_round_cost(&mut self, draft_round_cost: u32) {
         self.draft_round_cost = draft_round_cost;
     }
 
     pub fn set_kept(&mut self, kept: bool) {
         self.kept = kept;
-    }
-
-    pub fn set_total_points(&mut self, total_points: u16) {
-        self.total_points = total_points;
     }
 }
 

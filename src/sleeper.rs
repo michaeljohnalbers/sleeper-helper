@@ -1,10 +1,9 @@
+use crate::errors::{GeneralError, RequestError};
+use reqwest::blocking::Response;
 use reqwest::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
-use reqwest::StatusCode;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::error::Error;
-use std::fmt;
-use std::fmt::{Display, Formatter};
 
 // TODO: include final league order
 
@@ -21,7 +20,6 @@ pub struct Sleeper {
 pub struct PlayerDetails {
     pub active: bool,
     pub name: String,
-    player_id: String,
     pub position: String,
     pub points_scored: i32,
     pub team: String,
@@ -72,7 +70,7 @@ impl Sleeper {
                             player_id,
                             &all_player_stats,
                             &scoring_settings,
-                        );
+                        )?;
 
                         let player_detail = PlayerDetails {
                             active: is_active(player.status.clone()),
@@ -81,7 +79,6 @@ impl Sleeper {
                                 player.first_name.clone().unwrap_or(unknown.clone()),
                                 player.last_name.clone().unwrap_or(unknown.clone())
                             ),
-                            player_id: player_id.to_string(),
                             position: player.position.clone().unwrap_or(unknown.clone()),
                             points_scored,
                             team: player.team.clone().unwrap_or(unknown.clone()),
@@ -96,6 +93,7 @@ impl Sleeper {
 
             sleeper.roster_details.push(roster_details);
         }
+        sleeper.roster_details.sort_by(|a, b| a.owner.cmp(&b.owner));
         Ok(sleeper)
     }
 }
@@ -104,7 +102,7 @@ fn calc_player_points_scored(
     player_id: &String,
     all_player_stats: &Vec<SleeperPlayerStats>,
     scoring_settings: &HashMap<String, f32>,
-) -> i32 {
+) -> Result<i32, Box<dyn Error>> {
     for player_stats in all_player_stats.iter() {
         if player_stats.player_id == *player_id {
             let mut points_scored = 0.0;
@@ -115,53 +113,49 @@ fn calc_player_points_scored(
                     points_scored += v * setting_value;
                 }
             }
-            return points_scored.round() as i32;
+            return Ok(points_scored.round() as i32);
         }
     }
-    // TODO: error
-    println!("No stats found for player {player_id}!");
-    0
+
+    Err(Box::new(GeneralError::from_str(
+        "No stats found for player {player_id}!",
+    )))
 }
 
-/// Error encapsulating data for a failed Sleeper HTTP request. In this case failed means
-/// a non-2xx error, not something like a socket error.
-#[derive(Debug, Clone)]
-pub struct RequestError {
-    body: String,
-    status: StatusCode,
-    msg: String,
-}
-
-impl Display for RequestError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}. Status: {}, Request Body: {}",
-            self.msg, self.status, self.body
-        )
+impl Sleeper {
+    /// Convenience function to return an error in the case of an HTTP error. On error, the
+    /// response body is consumed and an error with details returned. If there is no error,
+    /// and empty success is returned.
+    /// # Arguments
+    /// * `response` - response to check
+    /// * `description` - description of the HTTP call being checked
+    fn check_http_error(response: Response, description: &str) -> Result<Response, Box<dyn Error>> {
+        if !response.status().is_success() {
+            return Err(Box::new(RequestError {
+                msg: String::from(description),
+                status: response.status(),
+                body: response.text()?,
+            }));
+        }
+        Ok(response)
     }
-}
 
-impl Error for RequestError {}
+    fn graphql_request(
+        &self,
+        query: String,
+        failure_description: &str,
+    ) -> Result<Response, Box<dyn Error>> {
+        let response = self
+            .client
+            .post("https://sleeper.com/graphql")
+            .header(ACCEPT, "application/json")
+            .header(CONTENT_TYPE, "application/json")
+            .header(AUTHORIZATION, self.jwt.as_str())
+            .body(query)
+            .send()?;
 
-/// Convenience function to return an error in the case of an HTTP error. On error, the
-/// response body is consumed and an error with details returned. If there is no error,
-/// and empty success is returned.
-/// # Arguments
-/// * `response` - response to check
-/// * `description` - description of the HTTP call being checked
-fn check_http_error(
-    response: reqwest::blocking::Response,
-    description: &str,
-) -> Result<reqwest::blocking::Response, Box<dyn Error>> {
-    if !response.status().is_success() {
-        return Err(Box::new(RequestError {
-            msg: String::from(description),
-            status: response.status(),
-            body: response.text()?,
-        }));
+        Self::check_http_error(response, failure_description)
     }
-    Ok(response)
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -170,7 +164,6 @@ struct InitializeLeague {
     name: String,
     previous_league_id: Option<String>,
     season: String,
-    status: String,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -188,22 +181,14 @@ impl Sleeper {
         println!("Retrieving league Ids...");
 
         // This API call can be seen when loading the app (just https://sleeper.com) the first time, or after a refresh.
-        let template = r#"{
+        let query = r#"{
   "operationName": "initialize_app",
   "variables":{},
   "query":"query initialize_app { my_leagues(exclude_archived: false) {league_id name previous_league_id season status} }"
 }"#;
 
-        let response = self
-            .client
-            .post("https://sleeper.com/graphql")
-            .header(ACCEPT, "application/json")
-            .header(CONTENT_TYPE, "application/json")
-            .header(AUTHORIZATION, self.jwt.as_str())
-            .body(template)
-            .send()?;
-
-        let response = check_http_error(response, "Failed to retrieve league details.")?;
+        let response =
+            self.graphql_request(query.to_string(), "Failed to retrieve league details.")?;
 
         let initialize: Initialize = response.json::<Initialize>()?;
 
@@ -215,8 +200,10 @@ impl Sleeper {
             }
         }
 
-        // TODO: return error
-        panic!("Could not find league id for {}", self.year);
+        Err(Box::new(GeneralError::from_string(format!(
+            "Could not find league id for {}",
+            self.year
+        ))))
     }
 }
 
@@ -235,7 +222,7 @@ impl Sleeper {
 
         let response = reqwest::blocking::get(url_string)?;
 
-        let response = check_http_error(
+        let response = Self::check_http_error(
             response,
             format!("Failed to retrieve stats for season {}.", self.year).as_str(),
         )?;
@@ -284,15 +271,7 @@ impl Sleeper {
 
         let query = format!("{}{}{}", prefix, league_id, last);
 
-        let response = self
-            .client
-            .post("https://sleeper.com/graphql")
-            .header(ACCEPT, "application/json")
-            .header(CONTENT_TYPE, "application/json")
-            .body(query)
-            .send()?;
-
-        let response = check_http_error(response, "Failed to retrieve league metadata.")?;
+        let response = self.graphql_request(query, "Failed to retrieve league metadata.")?;
 
         let previous_year = self.year - 1;
         let league_metadata: Metadata = response.json::<Metadata>().unwrap();
@@ -302,8 +281,9 @@ impl Sleeper {
             }
         }
 
-        // TODO: error
-        Ok(HashMap::new())
+        Err(Box::new(GeneralError::from_str(
+            "No league lineage found for {previous_year}.",
+        )))
     }
 }
 #[derive(Debug, Clone, Deserialize)]
@@ -317,7 +297,6 @@ struct SleeperLeaguePlayer {
     // TODO: figure out which of these actually needs Option
     first_name: Option<String>,
     last_name: Option<String>,
-    player_id: Option<String>,
     position: Option<String>,
     status: Option<String>,
     team: Option<String>,
@@ -345,7 +324,6 @@ impl Sleeper {
         println!("Retrieving league details (teams, rosters)...");
 
         // This API call can be seen when loading the initial league page at sleeper.com.
-        // TODO: using 'player_map' may eliminate the need to get the full player list
         let prefix = r#"{
   "operationName": "get_league_detail",
   "variables":{},
@@ -358,22 +336,7 @@ impl Sleeper {
             prefix, "918974195273412608", middle, "918974195273412608", end
         );
 
-        let response = self
-            .client
-            .post("https://sleeper.com/graphql")
-            .header(ACCEPT, "application/json")
-            .header(CONTENT_TYPE, "application/json")
-            .header(AUTHORIZATION, self.jwt.as_str())
-            .body(query)
-            .send()?;
-
-        if !response.status().is_success() {
-            return Err(Box::new(RequestError {
-                msg: String::from("Failed to retrieve league details."),
-                status: response.status(),
-                body: response.text()?,
-            }));
-        }
+        let response = self.graphql_request(query, "Failed to retrieve league details.")?;
 
         let league_details: SleeperLeagueDetails = response.json::<SleeperLeagueDetails>()?;
         Ok(league_details)

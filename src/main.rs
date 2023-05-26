@@ -1,9 +1,11 @@
+mod errors;
 mod model;
 mod sleeper;
 
 pub use crate::model::*;
 use crate::sleeper::Sleeper;
 use chrono::Datelike;
+use std::collections::HashMap;
 use std::error::Error;
 use std::{env, process};
 
@@ -19,49 +21,34 @@ fn main() -> Result<(), Box<dyn Error>> {
     let jwt = &args[1];
     let year = chrono::Local::now().year();
 
-    let sleeper = Sleeper::new(jwt.to_string(), year);
+    let sleeper = Sleeper::new(jwt.to_string(), year)?;
+    let rosters = sleeper.roster_details;
 
-    // TODO: include generated-on date for the data
-
-    println!("{:#?}", sleeper.unwrap().roster_details);
-    Ok(())
-}
-
-/// Just to not have warnings.
-fn dummy() -> Result<(), Box<dyn Error>> {
     let cap = Cap::new(1300);
     let mut season = Season::new(cap);
 
-    let owner = Owner::new("1234", "theKekoa");
-    let mut team = Team::new(owner);
-    team.add_player(Player::new(
-        "Christian McCaffrey",
-        vec!["RB".to_string()],
-        "4000",
-        "SF",
-    ));
-    team.add_player(Player::new(
-        "Nick Chubb",
-        vec!["RB".to_string()],
-        "4001",
-        "CLE",
-    ));
-    season.add_team(team);
+    for roster in rosters {
+        let owner = Owner::new(roster.owner.as_str());
+        let mut team = Team::new(owner);
 
-    let owner = Owner::new("abcd", "Orange Herbert");
-    let mut team = Team::new(owner);
-    team.add_player(Player::new(
-        "Justin Herbert",
-        vec!["QB".to_string()],
-        "9",
-        "LAC",
-    ));
-    season.add_team(team);
+        for player_details in roster.players {
+            let player = Player::new(
+                player_details.name.as_str(),
+                player_details.active,
+                player_details.position.as_str(),
+                player_details.team.as_str(),
+                player_details.points_scored,
+            );
 
-    let mut seasons = std::collections::HashMap::new();
-    seasons.insert("2023", season);
+            team.add_player(player);
+        }
+        season.add_team(team);
+    }
 
+    let mut seasons = HashMap::new();
+    seasons.insert(year.to_string(), season);
     let json = serde_json::to_string(&seasons)?;
-    //println!("{json}");
+    println!("{json}");
+
     Ok(())
 }
