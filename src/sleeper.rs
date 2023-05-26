@@ -42,8 +42,6 @@ impl Sleeper {
         };
         let league_ids = sleeper.get_league_ids()?;
         let league_id = league_ids.0;
-        let previous_league_id = league_ids.1.unwrap();
-        println!("League id: {league_id}, previous id: {previous_league_id}");
         let league_details = sleeper.get_league_detail()?;
         let all_player_stats = sleeper.get_player_stats()?;
         let scoring_settings = sleeper.get_league_scoring_settings(league_id)?;
@@ -178,8 +176,6 @@ struct Initialize {
 
 impl Sleeper {
     pub fn get_league_ids(&self) -> Result<(String, Option<String>), Box<dyn Error>> {
-        println!("Retrieving league Ids...");
-
         // This API call can be seen when loading the app (just https://sleeper.com) the first time, or after a refresh.
         let query = r#"{
   "operationName": "initialize_app",
@@ -216,8 +212,6 @@ pub struct SleeperPlayerStats {
 impl Sleeper {
     fn get_player_stats(&self) -> Result<Vec<SleeperPlayerStats>, Box<dyn Error>> {
         let previous_year = self.year - 1;
-        println!("Getting player stats for {previous_year}...");
-
         let url_string = format!("https://api.sleeper.com/stats/nfl/{}?season_type=regular&position[]=DEF&position[]=K&position[]=QB&position[]=RB&position[]=TE&position[]=WR&order_by=pts_2qb", previous_year);
 
         let response = reqwest::blocking::get(url_string)?;
@@ -259,8 +253,6 @@ impl Sleeper {
         &self,
         league_id: String,
     ) -> Result<HashMap<String, f32>, Box<dyn Error>> {
-        println!("Retrieving scoring settings...");
-
         // This API call can be seen when loading the initial league page at sleeper.com.
         let prefix = r#"{
   "operationName": "metadata",
@@ -321,8 +313,6 @@ struct SleeperLeagueDetails {
 
 impl Sleeper {
     fn get_league_detail(&self) -> Result<SleeperLeagueDetails, Box<dyn Error>> {
-        println!("Retrieving league details (teams, rosters)...");
-
         // This API call can be seen when loading the initial league page at sleeper.com.
         let prefix = r#"{
   "operationName": "get_league_detail",
