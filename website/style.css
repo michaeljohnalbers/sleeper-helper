@@ -1,0 +1,74 @@
+body {
+  background-color: rgb(248, 250, 251);
+  color: rgb(33, 33, 33);
+  font-family: "Open Sans",Arial,Helvetica,sans-serif;
+}
+
+td {
+  padding-right: 0.75em;
+}
+
+.topBox {
+  height: 15vh; /* When using 20% (to fill all 100% of vh, with scroll box) this creates a main page scrollbar. */
+  width: 70vw;
+  margin: 0 auto; /* Center horizontally */
+  border-bottom: 2px;
+}
+
+.season {
+  text-decoration: underline;
+  text-align: center;
+  font-size: 1.75em;
+}
+
+.keeper_limit_header {
+}
+
+/*
+Puts all of the teams into a container that scrolls vertically.
+This is so that the header (namely, salary cap) info is always visible.
+*/
+.scrollBox {
+  height: 80vh;
+  width: 100vw;
+  overflow: scroll;
+}
+
+.teamsGroup {
+  /* TODO: get all teams the same size and aligned nicely*/
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.teamGroup {
+  padding-right: 2.0em;
+  padding-bottom: 1em;
+}
+
+.owner {
+  font-size: 1.2em;
+  background-color: #0374e7;
+  color: white;
+  padding-left: 0.1em;
+}
+
+.playersTable {
+  padding-top: 0.2em;
+}
+
+.header_row,
+.summary
+{
+  font-weight: bold;
+}
+
+.summary {
+  text-align: end;
+}
+
+.plain_text {}
+
+.error_text {
+  color: red;
+}

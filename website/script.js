@@ -3,37 +3,62 @@ function reqListener() {
 
   var e = document.getElementById('main')
 
-  var year = new Date().getFullYear()
+  // TODO: move title into here to make it easier to include it in viewport %s
 
+  var year = new Date().getFullYear()
   var season = keeper_data[year]
 
-  e.appendChild(createText(year + " Season"));
-  e.appendChild(createText("Salary cap: " + season.cap.points + " points."));
+  var topBox = document.createElement("div");
+  topBox.classList.add("topBox");
+  e.appendChild(topBox);
+
+  topBox.appendChild(createText(year + " Season", "season"));
+
+  topBox.appendChild(createText("Keeper Limits", "keeper_limit_header"));
+  var list = document.createElement("ul");
+  topBox.appendChild(list)
+  var salary_cap_points_element = document.createElement("li");
+  list.appendChild(salary_cap_points_element);
+  salary_cap_points_element.appendChild(createText(season.cap.points + " points", "plain_text"));
+
+  var scrollBox = document.createElement("div");
+  scrollBox.classList.add("scrollBox");
+  e.appendChild(scrollBox);
+
+  var teamsGroup = document.createElement("div");
+  teamsGroup.classList.add("teamsGroup");
+  scrollBox.appendChild(teamsGroup);
 
   for (const team of season.teams) {
-
     let team_data_js = {
       players: []
     }
 
-    e.appendChild(createText(team.owner.user_name));
-    var table = document.createElement("table")
-    e.appendChild(table);
+    var teamGroup = document.createElement("div");
+    teamGroup.classList.add("teamGroup");
+    teamsGroup.appendChild(teamGroup);
+
+    teamGroup.appendChild(createText(team.owner.user_name, "owner"));
+    var table = document.createElement("table");
+    table.classList.add("playersTable");
+    teamGroup.appendChild(table);
     var row = table.insertRow();
-    row.insertCell().appendChild(createText("Player"));
-    row.insertCell().appendChild(createText("Points"));
-    row.insertCell().appendChild(createText("Round"));
-    row.insertCell().appendChild(createText("Keep?"));
+    row.insertCell().appendChild(createText("Player", "header_row"));
+    row.insertCell().appendChild(createText("Position", "header_row"));
+    row.insertCell().appendChild(createText("Points", "header_row"));
+    row.insertCell().appendChild(createText("Round", "header_row"));
+    row.insertCell().appendChild(createText("Keep?", "header_row"));
 
     for (const player of team.players) {
       var row = table.insertRow();
-      if (player.position === "DEF") {
-        row.insertCell().appendChild(createText(player.name + ",&nbsp" + player.position));
-      } else  {
-        row.insertCell().appendChild(createText(player.name + ",&nbsp" + player.position + " - " + player.team));
+      var player_name = player.name;
+      if (player.position !== "DEF") {
+        player_name += " (" + player.team + ")"
       }
-      row.insertCell().appendChild(createText(player.total_points));
-      row.insertCell().appendChild(createText("0")); // TODO: set round when data is ready
+      row.insertCell().appendChild(createText(player_name, "plain_text"));
+      row.insertCell().appendChild(createText(player.position), "plain_text");
+      row.insertCell().appendChild(createText(player.total_points, "plain_text"));
+      row.insertCell().appendChild(createText("0", "plain_text")); // TODO: set round when data is ready
 
       let input = document.createElement("input");
       input.type = "checkbox";
@@ -45,10 +70,13 @@ function reqListener() {
           }
         }
         let keeper_points_text = keeper_points;
+        let total_points_element = team_data_js.total_points_element;
         if (keeper_points > season.cap.points) {
-          keeper_points_text += "!!!"; // TODO: replace with highlighting the box red
+          total_points_element.classList = ["error_text"];
+        } else {
+          total_points_element.className = ["plain_text"];
         }
-        team_data_js.total_points_element.innerHTML = keeper_points_text;
+        total_points_element.innerHTML = keeper_points_text;
       }
       row.insertCell().appendChild(input);
 
@@ -60,9 +88,14 @@ function reqListener() {
 
       team_data_js.players.push(player_data);
     }
+
+    // Just for a little visual space before tally row. Probably nicer way to do this.
+    table.insertRow().insertCell();
+
     var tally_row = table.insertRow();
-    tally_row.insertCell().innerHTML = "Total:"
-    let team_point_total = createText("0");
+    tally_row.insertCell();
+    tally_row.insertCell().appendChild(createText("Total:", "summary"));
+    let team_point_total = createText("0", "plain_text");
     team_data_js.total_points_element = team_point_total;
     tally_row.insertCell().appendChild(team_point_total);
 
@@ -71,22 +104,21 @@ function reqListener() {
     var clear_all_button = document.createElement("input")
     clear_all_button.type = "button"
     clear_all_button.value = "Clear All"
-    clear_all_button.onclick = ()=> {
+    clear_all_button.onclick = () => {
       for (const p of team_data_js.players) {
         p.keep_input.checked = false;
       }
+      // Call the onchange callback to reset the total value.
       // TODO: probably a better way to do this
       team_data_js.players[0].keep_input.onchange();
     }
     tally_row.insertCell().appendChild(clear_all_button);
-
-    e.appendChild(document.createElement("br"));
   }
 }
 
-function createText(text) {
+function createText(text, elementClass) {
     var node = document.createElement("div")
-    node.classList.add("text")
+    node.classList.add(elementClass)
     node.innerHTML = text
     return node
 }
