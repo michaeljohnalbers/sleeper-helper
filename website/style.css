@@ -38,7 +38,8 @@ This is so that the header (namely, salary cap) info is always visible.
   /* TODO: get all teams the same size and aligned nicely*/
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  /* TODO: this makes things look good on a computer (wide monitor), but in mobile it cuts off the sides of each team */
+  /*justify-content: center;*/
 }
 
 .teamGroup {
