@@ -42,7 +42,7 @@ impl Sleeper {
         };
         let league_ids = sleeper.get_league_ids()?;
         let league_id = league_ids.0;
-        let league_details = sleeper.get_league_detail()?;
+        let league_details = sleeper.get_league_detail(&league_id)?;
         let all_player_stats = sleeper.get_player_stats()?;
         let scoring_settings = sleeper.get_league_scoring_settings(league_id)?;
         let unknown = String::from("Unknown");
@@ -312,7 +312,10 @@ struct SleeperLeagueDetails {
 }
 
 impl Sleeper {
-    fn get_league_detail(&self) -> Result<SleeperLeagueDetails, Box<dyn Error>> {
+    fn get_league_detail(
+        &self,
+        league_id: &String,
+    ) -> Result<SleeperLeagueDetails, Box<dyn Error>> {
         // This API call can be seen when loading the initial league page at sleeper.com.
         let prefix = r#"{
   "operationName": "get_league_detail",
@@ -321,10 +324,7 @@ impl Sleeper {
         let middle = r#"\"){owner_id player_map} league_users(league_id: \""#;
         let end = r#"\"){display_name user_id} }"
 }"#;
-        let query = format!(
-            "{}{}{}{}{}",
-            prefix, "918974195273412608", middle, "918974195273412608", end
-        );
+        let query = format!("{}{}{}{}{}", prefix, *league_id, middle, *league_id, end);
 
         let response = self.graphql_request(query, "Failed to retrieve league details.")?;
 
