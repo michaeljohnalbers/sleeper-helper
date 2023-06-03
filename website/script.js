@@ -58,7 +58,7 @@ function reqListener() {
       row.insertCell().appendChild(createText(player_name, "plain_text"));
       row.insertCell().appendChild(createText(player.position), "plain_text");
       row.insertCell().appendChild(createText(player.total_points, "plain_text"));
-      row.insertCell().appendChild(createText("0", "plain_text")); // TODO: set round when data is ready
+      row.insertCell().appendChild(createText(player.draft_round_cost, "plain_text"));
 
       let input = document.createElement("input");
       input.type = "checkbox";
