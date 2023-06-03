@@ -24,6 +24,13 @@ td {
 .keeper_limit_header {
 }
 
+.position_button {
+  margin-left: 0.5em;
+  padding-left: 1em;
+  margin-right: 0.5em;
+  padding-right: 1em;
+}
+
 /*
 Puts all of the teams into a container that scrolls vertically.
 This is so that the header (namely, salary cap) info is always visible.
@@ -76,4 +83,10 @@ This is so that the header (namely, salary cap) info is always visible.
 
 .footnote {
   font-size: 0.75em;
+}
+
+@media only screen and (max-width: 600px) {
+  .invisible_on_mobile {
+    display: none;
+  }
 }

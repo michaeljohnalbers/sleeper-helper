@@ -21,6 +21,12 @@ function reqListener() {
   list.appendChild(salary_cap_points_element);
   salary_cap_points_element.appendChild(createText(season.cap.points + " points", "plain_text"));
 
+  var showHideGroup = document.createElement("div");
+  // Kind of a hack, but things get out of whack with this on mobile and it's easier to just make it disappear.
+  showHideGroup.classList.add("invisible_on_mobile");
+  topBox.appendChild(showHideGroup);
+  addShowHide(showHideGroup);
+
   var scrollBox = document.createElement("div");
   scrollBox.classList.add("scrollBox");
   e.appendChild(scrollBox);
@@ -51,6 +57,8 @@ function reqListener() {
 
     for (const player of team.players) {
       var row = table.insertRow();
+      row.classList.add(player.position);
+
       var player_name = player.name;
       if (player.position !== "DEF") {
         player_name += " (" + player.team + ")"
@@ -125,6 +133,31 @@ function createText(text, elementClass) {
     node.classList.add(elementClass)
     node.innerHTML = text
     return node
+}
+
+function addShowHide(container) {
+  container.appendChild(document.createTextNode("Show/Hide"));
+  var positions = ["QB", "RB", "WR", "TE", "K", "DEF"];
+  for (const position of positions) {
+    var hideButton = document.createElement("BUTTON");
+    hideButton.classList.add("position_button");
+    hideButton.appendChild(document.createTextNode(position));
+    hideButton.onclick = (event) => {
+      console.log(event);
+      var rows = document.getElementsByClassName(position);
+      var display = '';
+      var textDecoration = '';
+      if (rows[0].style.display == '') {
+        display = 'none';
+        textDecoration = 'line-through';
+      }
+      for (const row of rows) {
+        row.style.display = display;
+      }
+      event.target.style.textDecoration = textDecoration;
+    };
+    container.appendChild(hideButton);
+  }
 }
 
 window.onload = function() {
