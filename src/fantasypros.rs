@@ -9,7 +9,7 @@ pub struct PlayerRank {
     pub player_team_id: String,
     pub player_position_id: String,
     pub player_yahoo_id: String,
-    pub rank_ecr: u32,
+    pub rank_ecr: i32,
 }
 
 #[derive(Deserialize)]
@@ -50,12 +50,6 @@ impl FantasyPros {
             .header(ACCEPT, "application/json")
             .header("x-api-key", api_key);
         let response = request.send()?;
-
-        // println!("FantasyPros:\n{}", response.text().unwrap());
-        // Ok(PlayerRankings {
-        //     players: vec![],
-        //     last_updated: "".to_string(),
-        // })
 
         let player_rankings = response.json::<PlayerRankings>()?;
         Ok(player_rankings)

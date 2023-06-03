@@ -2,6 +2,7 @@
 
 Tool to help with core.fantasy in https://sleeper.com.
 
+Website is at http://core-fantasy.com
 
 ## Website
 Created with steps from https://docs.aws.amazon.com/AmazonS3/latest/userguide/website-hosting-custom-domain-walkthrough.html

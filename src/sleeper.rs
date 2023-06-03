@@ -10,8 +10,6 @@ use std::time::{Duration, SystemTime};
 
 // TODO: include final league order
 
-// TODO: maybe just get data for all seasons?
-
 pub struct Sleeper {
     client: reqwest::blocking::Client,
     jwt: String,
@@ -360,7 +358,6 @@ struct SleeperLeagueUser {
 
 #[derive(Debug, Clone, Deserialize)]
 struct SleeperLeaguePlayer {
-    // TODO: figure out which of these actually needs Option
     first_name: Option<String>,
     last_name: Option<String>,
     position: Option<String>,

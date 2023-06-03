@@ -30,7 +30,7 @@ impl Owner {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Player {
     active: bool,
-    draft_round_cost: u32,
+    draft_round_cost: i32,
     kept: bool,
     name: String,
     position: String,
@@ -51,7 +51,7 @@ impl Player {
         }
     }
 
-    pub fn set_draft_round_cost(&mut self, draft_round_cost: u32) {
+    pub fn set_draft_round_cost(&mut self, draft_round_cost: i32) {
         self.draft_round_cost = draft_round_cost;
     }
 
@@ -84,7 +84,6 @@ impl Team {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Season {
     cap: Cap,
-    // TODO: read-only flag?
     teams: Vec<Team>,
 }
 

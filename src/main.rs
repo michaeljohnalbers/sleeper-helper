@@ -15,11 +15,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
 
     if args.len() != 3 {
-        eprintln!("usage: {} [Sleeper jwt] [FantasyPros API Key]", &args[0]);
-        eprintln!("  No Sleeper JWT or FantasyPros API Key supplied");
-        // TODO: use single multi-line string here
-        eprintln!("  To get the Sleeper JWT, open sleeper.com, filter network traffic for 'graphql' then grap Authorization header value.");
-        eprintln!("  To get the Fantasy Pros API Key, open fantasypros.com, go to NFL rankings, select non-default scoring or position value, filter network traffic for 'consensus' then grab x-api-key header value.");
+        print_help(&args[0]);
         process::exit(1);
     }
 
@@ -35,9 +31,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let cap = Cap::new(1300);
     let mut season = Season::new(cap);
 
-    // TODO: need to clean up the different int types (mixing u32, i32 and usize)
-
-    let league_size = rosters.len() as u32;
+    let league_size = rosters.len() as i32;
     for roster in rosters {
         let owner = Owner::new(roster.owner.as_str());
         let mut team = Team::new(owner);
@@ -75,10 +69,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn get_draft_round_cost(
     player_rankings: &FantasyPros,
     player_details: &PlayerDetails,
-    number_teams: u32,
+    number_teams: i32,
     roster_size: i32,
-) -> Result<u32, Box<dyn Error>> {
-    const MAX_RANK: u32 = 9999;
+) -> Result<i32, Box<dyn Error>> {
+    const MAX_RANK: i32 = 9999;
     let mut final_player_rank = MAX_RANK;
     for ii in 0..player_rankings.superflex_rankings.players.len() {
         let player_rank = player_rankings.superflex_rankings.players.get(ii).unwrap();
@@ -115,12 +109,12 @@ fn get_draft_round_cost(
         // developed initially, neither Tom Brady (newly retired) or Jarrett Stidham (no clue why)
         // had no rankings.
         eprintln!("WARNING: No ranking found for {:?}", player_details);
-        return Ok(roster_size as u32);
+        return Ok(roster_size);
     }
 
-    let mut round_cost = ((final_player_rank as f32) / (number_teams as f32)).ceil() as u32;
-    if round_cost > roster_size as u32 {
-        round_cost = roster_size as u32;
+    let mut round_cost = ((final_player_rank as f32) / (number_teams as f32)).ceil() as i32;
+    if round_cost > roster_size {
+        round_cost = roster_size;
     }
 
     Ok(round_cost)
@@ -135,4 +129,16 @@ fn player_probably_equal(player_rank: &PlayerRank, player_details: &PlayerDetail
         .contains(player_details.name.as_str())
         && (player_rank.player_position_id == player_details.position
             || player_details.position == "DEF" && player_rank.player_position_id == "DST")
+}
+
+fn print_help(exe: &str) {
+    eprintln!("usage: {exe} [Sleeper JWT] [FantasyPros API Key]");
+    eprintln!("  No Sleeper JWT or FantasyPros API Key supplied");
+    let jwt_help = "  To get the Sleeper JWT, open sleeper.com, filter network traffic \
+for 'graphql' then grap Authorization header value.";
+    eprintln!("{jwt_help}");
+    let apikey_help = "  To get the Fantasy Pros API Key, open fantasypros.com, go to NFL \
+rankings, select non-default scoring or position value, filter network traffic for 'consensus' then \
+grab x-api-key header value.";
+    eprintln!("{apikey_help}");
 }
