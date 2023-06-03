@@ -114,6 +114,10 @@ function reqListener() {
     }
     tally_row.insertCell().appendChild(clear_all_button);
   }
+
+  scrollBox.appendChild(createText("Player data gathered on " + season.metadata.player_data_pull_date, "footnote"));
+  scrollBox.appendChild(createText("Player round cost last updated on " + season.metadata.player_rankings_gen_date, "footnote"));
+  scrollBox.appendChild(createText(season.metadata.notes, "footnote"));
 }
 
 function createText(text, elementClass) {

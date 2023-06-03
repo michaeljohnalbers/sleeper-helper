@@ -1,5 +1,27 @@
 use serde::{Deserialize, Serialize};
 
+/// General metadata about the actual league info
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Metadata {
+    player_data_pull_date: String,
+    player_rankings_gen_date: String,
+    notes: String,
+}
+
+impl Metadata {
+    pub fn new(
+        player_data_pull_date: String,
+        player_rankings_gen_date: String,
+        notes: String,
+    ) -> Metadata {
+        Metadata {
+            player_data_pull_date,
+            player_rankings_gen_date,
+            notes,
+        }
+    }
+}
+
 /// The cap cost for keepers.
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct Cap {
@@ -84,12 +106,17 @@ impl Team {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Season {
     cap: Cap,
+    metadata: Metadata,
     teams: Vec<Team>,
 }
 
 impl Season {
-    pub fn new(cap: Cap) -> Season {
-        Season { cap, teams: vec![] }
+    pub fn new(cap: Cap, metadata: Metadata) -> Season {
+        Season {
+            cap,
+            metadata,
+            teams: vec![],
+        }
     }
 
     pub fn add_team(&mut self, team: Team) {

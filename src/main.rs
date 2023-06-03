@@ -21,7 +21,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let jwt = &args[1];
     let api_key = &args[2];
-    let year = chrono::Local::now().year();
+    let now = chrono::Local::now();
+    let year = now.year();
 
     let sleeper = Sleeper::new(jwt.to_string(), year)?;
     let rosters = sleeper.roster_details;
@@ -29,7 +30,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let player_rankings = FantasyPros::new(api_key.to_string(), year)?;
 
     let cap = Cap::new(1300);
-    let mut season = Season::new(cap);
+
+    let league_metadata = Metadata::new(
+        now.to_rfc3339(),
+        player_rankings.superflex_rankings.last_updated.clone(),
+        "".to_string(),
+    );
+
+    let mut season = Season::new(cap, league_metadata);
 
     let league_size = rosters.len() as i32;
     for roster in rosters {

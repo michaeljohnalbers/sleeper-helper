@@ -73,3 +73,7 @@ This is so that the header (namely, salary cap) info is always visible.
 .error_text {
   color: red;
 }
+
+.footnote {
+  font-size: 0.75em;
+}
