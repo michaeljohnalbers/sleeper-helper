@@ -2,6 +2,7 @@ use crate::errors::{GeneralError, RequestError};
 use reqwest::blocking::Response;
 use reqwest::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
 use serde::Deserialize;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::error::Error;
 use std::ops::Sub;
@@ -105,9 +106,13 @@ impl Sleeper {
                         };
                         roster_details.players.push(player_detail);
                     }
-                    roster_details
-                        .players
-                        .sort_by(|a, b| b.points_scored.cmp(&a.points_scored));
+                    roster_details.players.sort_by(|a, b| {
+                        // Ensure that player ordering will always be the same between runs of this code.
+                        match b.points_scored.cmp(&a.points_scored) {
+                            Ordering::Equal => a.name.cmp(&b.name),
+                            v => v,
+                        }
+                    });
                 }
             }
 

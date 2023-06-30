@@ -12,7 +12,13 @@ To test locally:
 cd website
 python3 -m http.server
 ```
-Got to http://localhost:8000/
+Go to http://127.0.0.1:8000/
+  
+For mobile testing
+```bash
+cd website
+python3 -m http.server --bind 192.168.0.26  # Or whatever the IP of the machine is
+```
 
 ## Updating files
 ```bash

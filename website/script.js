@@ -3,8 +3,6 @@ function reqListener() {
 
   var e = document.getElementById('main')
 
-  // TODO: move title into here to make it easier to include it in viewport %s
-
   var year = new Date().getFullYear()
   var season = keeper_data[year]
 
@@ -12,7 +10,7 @@ function reqListener() {
   topBox.classList.add("topBox");
   e.appendChild(topBox);
 
-  topBox.appendChild(createText(year + " Season", "season"));
+  topBox.appendChild(createTextBlock(year + " Season", "season"));
 
   topBox.appendChild(createText("Keeper Limits", "keeper_limit_header"));
   var list = document.createElement("ul");
@@ -21,8 +19,8 @@ function reqListener() {
   list.appendChild(salary_cap_points_element);
   salary_cap_points_element.appendChild(createText(season.cap.points + " points", "plain_text"));
 
-  var showHideGroup = document.createElement("div");
   // Kind of a hack, but things get out of whack with this on mobile and it's easier to just make it disappear.
+  var showHideGroup = document.createElement("div");
   showHideGroup.classList.add("invisible_on_mobile");
   topBox.appendChild(showHideGroup);
   addShowHide(showHideGroup);
@@ -44,7 +42,7 @@ function reqListener() {
     teamGroup.classList.add("teamGroup");
     teamsGroup.appendChild(teamGroup);
 
-    teamGroup.appendChild(createText(team.owner.user_name, "owner"));
+    teamGroup.appendChild(createTextBlock(team.owner.user_name, "owner"));
     var table = document.createElement("table");
     table.classList.add("playersTable");
     teamGroup.appendChild(table);
@@ -123,20 +121,27 @@ function reqListener() {
     tally_row.insertCell().appendChild(clear_all_button);
   }
 
-  scrollBox.appendChild(createText("Player data gathered on " + season.metadata.player_data_pull_date, "footnote"));
-  scrollBox.appendChild(createText("Player round cost last updated on " + season.metadata.player_rankings_gen_date, "footnote"));
-  scrollBox.appendChild(createText(season.metadata.notes, "footnote"));
+  scrollBox.appendChild(createTextBlock("Player data gathered on " + season.metadata.player_data_pull_date, "footnote"));
+  scrollBox.appendChild(createTextBlock("Player round cost last updated on " + season.metadata.player_rankings_gen_date, "footnote"));
+  scrollBox.appendChild(createTextBlock(season.metadata.notes, "footnote"));
 }
 
-function createText(text, elementClass) {
+function createTextBlock(text, elementClass) {
     var node = document.createElement("div")
     node.classList.add(elementClass)
     node.innerHTML = text
     return node
 }
 
+function createText(text, elementClass) {
+    var node = document.createElement("span")
+    node.classList.add(elementClass)
+    node.innerHTML = text
+    return node
+}
+
 function addShowHide(container) {
-  container.appendChild(document.createTextNode("Show/Hide"));
+  container.appendChild(createText("Show/Hide"));
   var positions = ["QB", "RB", "WR", "TE", "K", "DEF"];
   for (const position of positions) {
     var hideButton = document.createElement("BUTTON");
