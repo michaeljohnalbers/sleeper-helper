@@ -37,7 +37,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         "".to_string(),
     );
 
-    let mut season = Season::new(cap, league_metadata);
+    let mut season = Season::new(cap, league_metadata, sleeper.roster_size);
 
     let league_size = rosters.len() as i32;
     for roster in rosters {

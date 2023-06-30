@@ -108,14 +108,16 @@ pub struct Season {
     cap: Cap,
     metadata: Metadata,
     teams: Vec<Team>,
+    roster_size: i32,
 }
 
 impl Season {
-    pub fn new(cap: Cap, metadata: Metadata) -> Season {
+    pub fn new(cap: Cap, metadata: Metadata, roster_size: i32) -> Season {
         Season {
             cap,
             metadata,
             teams: vec![],
+            roster_size,
         }
     }
 

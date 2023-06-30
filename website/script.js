@@ -64,11 +64,15 @@ function reqListener() {
       row.insertCell().appendChild(createText(player_name, "plain_text"));
       row.insertCell().appendChild(createText(player.position), "plain_text");
       row.insertCell().appendChild(createText(player.total_points, "plain_text"));
-      row.insertCell().appendChild(createText(player.draft_round_cost, "plain_text"));
+      let draft_round_cost_node = createText(player.draft_round_cost, "plain_text");
+      row.insertCell().appendChild(draft_round_cost_node);
 
       let input = document.createElement("input");
       input.type = "checkbox";
       input.onchange = () => {
+        /*
+          Update overall points for keepers
+        */
         let keeper_points = 0;
         for (const p of team_data_js.players) {
           if (p.keep_input.checked) {
@@ -83,17 +87,84 @@ function reqListener() {
           total_points_element.className = ["plain_text"];
         }
         total_points_element.innerHTML = keeper_points_text;
+
+        /*
+          Update draft round cost
+        */
+        // Yup, inefficient, but keeps the code cleaner
+        let next_round_available = 0;
+        let max_round_available = season.roster_size;
+        let round_taken = new Array(season.roster_size).fill(false);
+        for (const p of team_data_js.players) {
+          var round_cost_string = p.original_round_cost
+          if (p.keep_input.checked) {
+            let modified_round = -1;
+
+            for (let ii = 0; ii < round_taken.length; ++ii) {
+              if (false == round_taken[ii] && (ii+1) >= p.original_round_cost) {
+                modified_round = ii + 1;
+                round_taken[ii] = true;
+                break;
+              }
+            }
+
+            // No spot was found, this likely means the player is a late round keeper and
+            // we need to find an earlier spot to allocate to them.
+            if (-1 == modified_round) {
+               for (let ii = round_taken.length-1; ii >= 0; --ii) {
+                 if (false == round_taken[ii]) {
+                   modified_round = ii + 1;
+                   round_taken[ii] = true;
+                   break;
+                 }
+               }
+            }
+
+            round_cost_string += "->" + modified_round;
+          }
+          p.draft_round_cost_node.innerHTML = round_cost_string;
+        }
       }
       row.insertCell().appendChild(input);
 
       let player_data = {
+        name: player_name,
         points_scored: player.total_points,
-        round: 0,
-        keep_input: input
+        original_round_cost: player.draft_round_cost,
+        keep_input: input,
+        draft_round_cost_node: draft_round_cost_node
       };
 
       team_data_js.players.push(player_data);
     }
+
+    // Sorting the players by draft cost ordering to make updating the values much easier
+    team_data_js.players.sort((a,b) => {
+      if (a.original_round_cost < b.original_round_cost) {
+         return -1;
+      }
+      if (a.original_round_cost > b.original_round_cost) {
+         return 1;
+      }
+
+      // Each item compared after here ensures consistent sort order
+
+      // Secondary sort, descending points order
+      if (a.points_scored > b.points_scored) {
+        return -1;
+      }
+      if (a.points_scored < b.points_scored) {
+        return 1;
+      }
+      // Final differentiator
+      if (a.name < b.name) {
+        return -1;
+      }
+      if (a.name > b.name) {
+        return 1;
+      }
+      return 0;
+    });
 
     // Just for a little visual space before tally row. Probably nicer way to do this.
     table.insertRow().insertCell();
@@ -148,7 +219,6 @@ function addShowHide(container) {
     hideButton.classList.add("position_button");
     hideButton.appendChild(document.createTextNode(position));
     hideButton.onclick = (event) => {
-      console.log(event);
       var rows = document.getElementsByClassName(position);
       var display = '';
       var textDecoration = '';
