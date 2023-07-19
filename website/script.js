@@ -63,7 +63,8 @@ function reqListener() {
       }
       row.insertCell().appendChild(createText(player_name, "plain_text"));
       row.insertCell().appendChild(createText(player.position), "plain_text");
-      row.insertCell().appendChild(createText(player.total_points, "plain_text"));
+      let points_scored_node = createText(player.total_points, "plain_text")
+      row.insertCell().appendChild(points_scored_node);
       let draft_round_cost_node = createText(player.draft_round_cost, "plain_text");
       row.insertCell().appendChild(draft_round_cost_node);
 
@@ -71,12 +72,47 @@ function reqListener() {
       input.type = "checkbox";
       input.onchange = () => {
         /*
+          There is a lot of looping over the same data (player list). However, the player lists are never
+          going to be more than maybe 20 players, so the repetition shouldn't slow things down noticeably.
+          And keeping the various adjustments discrete makes the code much easier to read.
+        */
+
+        /*
+          Update cap cost for each player
+          For each player kept with the same round cost, except the first, adjust the points cost by 25% * X, where
+          X is the number of players kept in that round. For example, supposed all of the following players
+          are kept
+            Player 1, 100 pts, round 3 -> 100 pts
+            Player 2,  70 pts, round 3 -> 75 * 1.25 = 94 pts
+            Player 3,  60 pts, round 3 -> 60 * 1.50 = 90 pts
+            Player 4,  50 pts, round 4 -> 50 pts
+        */
+        for (let ii = 0; ii < team_data_js.players.length; ++ii) {
+          const p = team_data_js.players[ii]
+          let point_cost_string = p.points_scored;
+          if (p.keep_input.checked) {
+            let multiplier = 1.0;
+            // Since the player list is sorted by draft round cost, look at all of the players above the
+            // currently selected player and check for the same original round cost.
+            for (let jj = ii-1; jj >= 0; --jj) {
+              const player_before = team_data_js.players[jj];
+              if (player_before.keep_input.checked && player_before.original_round_cost === p.original_round_cost) {
+                multiplier += 0.25;
+              }
+            }
+            p.adjusted_points_scored = Math.round(multiplier * p.points_scored);
+            point_cost_string += "->" + p.adjusted_points_scored;
+          }
+          p.points_scored_node.innerHTML = point_cost_string
+        }
+
+        /*
           Update overall points for keepers
         */
         let keeper_points = 0;
         for (const p of team_data_js.players) {
           if (p.keep_input.checked) {
-            keeper_points += p.points_scored;
+            keeper_points += p.adjusted_points_scored;
           }
         }
         let keeper_points_text = keeper_points;
@@ -91,7 +127,6 @@ function reqListener() {
         /*
           Update draft round cost
         */
-        // Yup, inefficient, but keeps the code cleaner
         let next_round_available = 0;
         let max_round_available = season.roster_size;
         let round_taken = new Array(season.roster_size).fill(false);
@@ -130,6 +165,8 @@ function reqListener() {
       let player_data = {
         name: player_name,
         points_scored: player.total_points,
+        adjusted_points_scored: player.total_points,
+        points_scored_node: points_scored_node,
         original_round_cost: player.draft_round_cost,
         keep_input: input,
         draft_round_cost_node: draft_round_cost_node

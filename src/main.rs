@@ -29,7 +29,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let player_rankings = FantasyPros::new(api_key.to_string(), year)?;
 
-    let cap = Cap::new(1300);
+    // 2022: 1300
+    // 2023: 1200
+    let cap = Cap::new(1200);
 
     let league_metadata = Metadata::new(
         now.to_rfc3339(),

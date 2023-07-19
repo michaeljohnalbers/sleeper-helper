@@ -9,8 +9,6 @@ use std::ops::Sub;
 use std::path::Path;
 use std::time::{Duration, SystemTime};
 
-// TODO: include final league order
-
 pub struct Sleeper {
     client: reqwest::blocking::Client,
     jwt: String,
@@ -48,10 +46,10 @@ impl Sleeper {
         let players_ids = Sleeper::get_player_ids()?;
 
         let league_ids = sleeper.get_league_ids()?;
-        let league_id = league_ids.0;
-        let league_details = sleeper.get_league_detail(&league_id)?;
+        let current_league_id = league_ids.0;
+        let league_details = sleeper.get_league_detail(&current_league_id)?;
         let all_player_stats = sleeper.get_player_stats()?;
-        let league_settings = sleeper.get_league_settings(league_id)?;
+        let league_settings = sleeper.get_league_settings(current_league_id)?;
         sleeper.roster_size = league_settings.roster_size;
         let unknown = String::from("Unknown");
         for user in league_details.data.league_users.iter() {

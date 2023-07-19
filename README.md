@@ -25,3 +25,6 @@ python3 -m http.server --bind 192.168.0.26  # Or whatever the IP of the machine 
 cd website
 aws s3 sync . s3://core-fantasy.com
 ```
+
+## Diff JSON
+`diff -y <(jq '.' website/keeper_data.json) <(jq '.' website/keeper_data_updated.json) | less`
