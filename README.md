@@ -4,6 +4,12 @@ Tool to help with core.fantasy in https://sleeper.com.
 
 Website is at http://core-fantasy.com
 
+This repo is composed of a couple of different pieces, essentially making this a monorepo.
+
+## scraper
+Run tool to pull data from Sleeper and Fantasy Pros to get player data for the fantasy league. The output of this is a
+JSON file which is included in the website.
+
 ## Website
 Created with steps from https://docs.aws.amazon.com/AmazonS3/latest/userguide/website-hosting-custom-domain-walkthrough.html
 ### Running

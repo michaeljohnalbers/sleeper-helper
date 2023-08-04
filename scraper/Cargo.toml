@@ -2,7 +2,7 @@
 authors = ["Michael Albers"]
 edition = "2021"
 license = "MIT"
-name = "sleeper-helper"
+name = "scraper"
 rust-version = "1.69"
 version = "0.1.0"
 
