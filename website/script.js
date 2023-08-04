@@ -1,35 +1,35 @@
 function reqListener() {
-  keeper_data = JSON.parse(this.responseText);
+  const keeper_data = JSON.parse(this.responseText);
 
-  var e = document.getElementById('main')
+  let e = document.getElementById('main')
 
-  var year = new Date().getFullYear()
-  var season = keeper_data[year]
+  const year = new Date().getFullYear()
+  const season = keeper_data[year]
 
-  var topBox = document.createElement("div");
+  let topBox = document.createElement("div");
   topBox.classList.add("topBox");
   e.appendChild(topBox);
 
   topBox.appendChild(createTextBlock(year + " Season", "season"));
 
   topBox.appendChild(createText("Keeper Limits", "keeper_limit_header"));
-  var list = document.createElement("ul");
+  let list = document.createElement("ul");
   topBox.appendChild(list)
-  var salary_cap_points_element = document.createElement("li");
+  let salary_cap_points_element = document.createElement("li");
   list.appendChild(salary_cap_points_element);
   salary_cap_points_element.appendChild(createText(season.cap.points + " points", "plain_text"));
 
   // Kind of a hack, but things get out of whack with this on mobile and it's easier to just make it disappear.
-  var showHideGroup = document.createElement("div");
+  let showHideGroup = document.createElement("div");
   showHideGroup.classList.add("invisible_on_mobile");
   topBox.appendChild(showHideGroup);
   addShowHide(showHideGroup);
 
-  var scrollBox = document.createElement("div");
+  let scrollBox = document.createElement("div");
   scrollBox.classList.add("scrollBox");
   e.appendChild(scrollBox);
 
-  var teamsGroup = document.createElement("div");
+  let teamsGroup = document.createElement("div");
   teamsGroup.classList.add("teamsGroup");
   scrollBox.appendChild(teamsGroup);
 
@@ -38,31 +38,31 @@ function reqListener() {
       players: []
     }
 
-    var teamGroup = document.createElement("div");
+    let teamGroup = document.createElement("div");
     teamGroup.classList.add("teamGroup");
     teamsGroup.appendChild(teamGroup);
 
     teamGroup.appendChild(createTextBlock(team.owner.user_name, "owner"));
-    var table = document.createElement("table");
+    let table = document.createElement("table");
     table.classList.add("playersTable");
     teamGroup.appendChild(table);
-    var row = table.insertRow();
-    row.insertCell().appendChild(createText("Player", "header_row"));
-    row.insertCell().appendChild(createText("Position", "header_row"));
-    row.insertCell().appendChild(createText("Points", "header_row"));
-    row.insertCell().appendChild(createText("Round", "header_row"));
-    row.insertCell().appendChild(createText("Keep?", "header_row"));
+    let headerRow = table.insertRow();
+    headerRow.insertCell().appendChild(createText("Player", "header_row"));
+    headerRow.insertCell().appendChild(createText("Position", "header_row"));
+    headerRow.insertCell().appendChild(createText("Points", "header_row"));
+    headerRow.insertCell().appendChild(createText("Round", "header_row"));
+    headerRow.insertCell().appendChild(createText("Keep?", "header_row"));
 
     for (const player of team.players) {
-      var row = table.insertRow();
+      let row = table.insertRow();
       row.classList.add(player.position);
 
-      var player_name = player.name;
+      let player_name = player.name;
       if (player.position !== "DEF") {
         player_name += " (" + player.team + ")"
       }
       row.insertCell().appendChild(createText(player_name, "plain_text"));
-      row.insertCell().appendChild(createText(player.position), "plain_text");
+      row.insertCell().appendChild(createText(player.position, "plain_text"));
       let points_scored_node = createText(player.total_points, "plain_text")
       row.insertCell().appendChild(points_scored_node);
       let draft_round_cost_node = createText(player.draft_round_cost, "plain_text");
@@ -127,16 +127,14 @@ function reqListener() {
         /*
           Update draft round cost
         */
-        let next_round_available = 0;
-        let max_round_available = season.roster_size;
         let round_taken = new Array(season.roster_size).fill(false);
         for (const p of team_data_js.players) {
-          var round_cost_string = p.original_round_cost
+          let round_cost_string = p.original_round_cost
           if (p.keep_input.checked) {
             let modified_round = -1;
 
             for (let ii = 0; ii < round_taken.length; ++ii) {
-              if (false == round_taken[ii] && (ii+1) >= p.original_round_cost) {
+              if (false === round_taken[ii] && (ii+1) >= p.original_round_cost) {
                 modified_round = ii + 1;
                 round_taken[ii] = true;
                 break;
@@ -145,9 +143,9 @@ function reqListener() {
 
             // No spot was found, this likely means the player is a late round keeper and
             // we need to find an earlier spot to allocate to them.
-            if (-1 == modified_round) {
+            if (-1 === modified_round) {
                for (let ii = round_taken.length-1; ii >= 0; --ii) {
-                 if (false == round_taken[ii]) {
+                 if (false === round_taken[ii]) {
                    modified_round = ii + 1;
                    round_taken[ii] = true;
                    break;
@@ -206,7 +204,7 @@ function reqListener() {
     // Just for a little visual space before tally row. Probably nicer way to do this.
     table.insertRow().insertCell();
 
-    var tally_row = table.insertRow();
+    let tally_row = table.insertRow();
     tally_row.insertCell();
     tally_row.insertCell().appendChild(createText("Total:", "summary"));
     let team_point_total = createText("0", "plain_text");
@@ -215,7 +213,7 @@ function reqListener() {
 
     tally_row.insertCell(); // Round column placeholder
 
-    var clear_all_button = document.createElement("input")
+    let clear_all_button = document.createElement("input")
     clear_all_button.type = "button"
     clear_all_button.value = "Clear All"
     clear_all_button.onclick = () => {
@@ -235,14 +233,14 @@ function reqListener() {
 }
 
 function createTextBlock(text, elementClass) {
-    var node = document.createElement("div")
+    let node = document.createElement("div")
     node.classList.add(elementClass)
     node.innerHTML = text
     return node
 }
 
 function createText(text, elementClass) {
-    var node = document.createElement("span")
+    let node = document.createElement("span")
     node.classList.add(elementClass)
     node.innerHTML = text
     return node
@@ -250,16 +248,16 @@ function createText(text, elementClass) {
 
 function addShowHide(container) {
   container.appendChild(createText("Show/Hide"));
-  var positions = ["QB", "RB", "WR", "TE", "K", "DEF"];
+  const positions = ["QB", "RB", "WR", "TE", "K", "DEF"];
   for (const position of positions) {
-    var hideButton = document.createElement("BUTTON");
+    let hideButton = document.createElement("BUTTON");
     hideButton.classList.add("position_button");
     hideButton.appendChild(document.createTextNode(position));
     hideButton.onclick = (event) => {
-      var rows = document.getElementsByClassName(position);
-      var display = '';
-      var textDecoration = '';
-      if (rows[0].style.display == '') {
+      let rows = document.getElementsByClassName(position);
+      let display = '';
+      let textDecoration = '';
+      if (rows[0].style.display === '') {
         display = 'none';
         textDecoration = 'line-through';
       }
