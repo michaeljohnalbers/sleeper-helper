@@ -8,6 +8,14 @@ website uses:
 * [pnpm](https://pnpm.io) for package management
 * [webpack](https://webpack.js.org) for bundling & development help
 
+## Build/Assemble
+Use pnpm & webpack to build the full set of files for the website
+
+```bash
+pnpm build
+```
+This will create the final website files in the **dist** directory.
+
 ## Run
 To test locally:
 ```bash
