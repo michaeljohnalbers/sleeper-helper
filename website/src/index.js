@@ -1,3 +1,5 @@
+import './style.css';
+
 function reqListener() {
   const keeper_data = JSON.parse(this.responseText);
 
