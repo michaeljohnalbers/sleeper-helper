@@ -12,6 +12,7 @@
   "license": "MIT",
   "devDependencies": {
     "css-loader": "^6.8.1",
+    "json-loader": "^0.5.7",
     "style-loader": "^3.3.3",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4"

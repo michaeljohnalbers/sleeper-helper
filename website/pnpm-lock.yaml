@@ -8,6 +8,9 @@ devDependencies:
   css-loader:
     specifier: ^6.8.1
     version: 6.8.1(webpack@5.88.2)
+  json-loader:
+    specifier: ^0.5.7
+    version: 0.5.7
   style-loader:
     specifier: ^3.3.3
     version: 3.3.3(webpack@5.88.2)
@@ -506,6 +509,10 @@ packages:
       '@types/node': 20.4.7
       merge-stream: 2.0.0
       supports-color: 8.1.1
+    dev: true
+
+  /json-loader@0.5.7:
+    resolution: {integrity: sha512-QLPs8Dj7lnf3e3QYS1zkCo+4ZwqOiF9d/nZnYozTISxXWCfNs9yuky5rJw4/W34s7POaNlbZmQGaB5NiXCbP4w==}
     dev: true
 
   /json-parse-even-better-errors@2.3.1:

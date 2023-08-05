@@ -1,9 +1,10 @@
 import './style.css';
+import KeeperData from './keeper_data.json'
 
-function reqListener() {
-  const keeper_data = JSON.parse(this.responseText);
+function initialize() {
+  const keeper_data = KeeperData;
 
-  let e = document.getElementById('main')
+  let e = document.createElement('div')
 
   const year = new Date().getFullYear()
   const season = keeper_data[year]
@@ -232,6 +233,8 @@ function reqListener() {
   scrollBox.appendChild(createTextBlock("Player data gathered on " + season.metadata.player_data_pull_date, "footnote"));
   scrollBox.appendChild(createTextBlock("Player round cost last updated on " + season.metadata.player_rankings_gen_date, "footnote"));
   scrollBox.appendChild(createTextBlock(season.metadata.notes, "footnote"));
+
+  return e;
 }
 
 function createTextBlock(text, elementClass) {
@@ -272,10 +275,4 @@ function addShowHide(container) {
   }
 }
 
-window.onload = function() {
-  const req = new XMLHttpRequest();
-  req.addEventListener("load", reqListener);
-  req.open("GET", "keeper_data.json");
-  req.setRequestHeader("Accept", "application/json");
-  req.send();
-}
+document.body.appendChild(initialize());
