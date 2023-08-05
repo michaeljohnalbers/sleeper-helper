@@ -8,7 +8,9 @@ website uses:
 * [pnpm](https://pnpm.io) for package management
 * [webpack](https://webpack.js.org) for bundling & development help
 
-## Build/Assemble
+## Development
+
+### Build/Assemble
 Use pnpm & webpack to build the full set of files for the website
 
 ```bash
@@ -16,19 +18,14 @@ pnpm build
 ```
 This will create the final website files in the **dist** directory.
 
-## Run
+### Run
 To test locally:
 ```bash
-cd website
-python3 -m http.server
+pnpm start
 ```
-Go to http://127.0.0.1:8000/
-
-For mobile testing
-```bash
-cd website
-python3 -m http.server --bind 192.168.0.26  # Or whatever the IP of the machine is
-```
+This will start the Webpack [DevServer](https://webpack.js.org/configuration/dev-server/). It opens listen ports
+on the localhost loop back as well as the public IP on the network. This server supports hot reloading: any changes
+made in the source will automatically be reloaded.
 
 ## Deploy
 ```bash
@@ -37,4 +34,4 @@ aws s3 sync . s3://core-fantasy.com
 ```
 
 ## Diff JSON
-`diff -y <(jq '.' website/keeper_data.json) <(jq '.' website/keeper_data_updated.json) | less`
+`diff -y <(jq '.' website/src/keeper_data.json) <(jq '.' website/src/keeper_data_updated.json) | less`

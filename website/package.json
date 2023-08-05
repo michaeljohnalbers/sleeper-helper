@@ -4,8 +4,10 @@
   "description": "Website for https://core-fantasy.com",
   "private": true,
   "scripts": {
+    "build": "webpack",
+    "start": "webpack serve --open",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack"
+    "watch": "webpack --watch"
   },
   "keywords": [],
   "author": "Michael Albers",
@@ -16,6 +18,7 @@
     "json-loader": "^0.5.7",
     "style-loader": "^3.3.3",
     "webpack": "^5.88.2",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
   }
 }
