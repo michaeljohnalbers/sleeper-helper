@@ -6,17 +6,13 @@ The website is a UI for interacting with the data provided from the [scraper](..
 
 website uses:
 * [pnpm](https://pnpm.io) for package management
-* [webpack](https://webpack.js.org) for bundling & development help
+* [webpack](https://webpack.js.org) for bundling & development help (See https://webpack.js.org/guides/ for lots of help)
+
+Webpack is set up to provide development and production support. See the sections below for details.
 
 ## Development
 
-### Build/Assemble
-Use pnpm & webpack to build the full set of files for the website
-
-```bash
-pnpm build
-```
-This will create the final website files in the **dist** directory.
+**There is no need to run `pnpm build` in development, the dev server will handle everything for you.
 
 ### Run
 To test locally:
@@ -27,9 +23,17 @@ This will start the Webpack [DevServer](https://webpack.js.org/configuration/dev
 on the localhost loop back as well as the public IP on the network. This server supports hot reloading: any changes
 made in the source will automatically be reloaded.
 
-## Deploy
+## Production
+
+### Building
+To build the production version of the site, run
 ```bash
-cd website
+pnpm build
+```
+
+### Deploying
+```bash
+cd dist
 aws s3 sync . s3://core-fantasy.com
 ```
 
