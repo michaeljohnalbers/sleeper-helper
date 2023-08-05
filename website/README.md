@@ -4,6 +4,9 @@ for instructions on setting up the bucket.
 
 The website is a UI for interacting with the data provided from the [scraper](../scraper).
 
+website uses:
+* [pnpm](https://pnpm.io) for package management
+
 ## Run
 To test locally:
 ```bash

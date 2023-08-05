@@ -14,8 +14,10 @@ Cargo.lock
 *.pdb
 
 # Added by cargo
-
 /target
+
+# Web stuff
+node_modules
 
 # Mine
 .idea
