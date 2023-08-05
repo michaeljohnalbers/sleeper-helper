@@ -6,6 +6,7 @@ The website is a UI for interacting with the data provided from the [scraper](..
 
 website uses:
 * [pnpm](https://pnpm.io) for package management
+* [webpack](https://webpack.js.org) for bundling & development help
 
 ## Run
 To test locally:
