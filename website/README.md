@@ -6,7 +6,8 @@ The website is a UI for interacting with the data provided from the [scraper](..
 
 website uses:
 * [pnpm](https://pnpm.io) for package management
-* [webpack](https://webpack.js.org) for bundling & development help (See https://webpack.js.org/guides/ for lots of help)
+* [Webpack](https://webpack.js.org) for bundling & development help (See https://webpack.js.org/guides/ for lots of help)
+* [Typescript](https://www.typescriptlang.org)
 
 Webpack is set up to provide development and production support. See the sections below for details.
 
