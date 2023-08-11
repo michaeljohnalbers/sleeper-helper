@@ -33,32 +33,34 @@ export default function Team({teamData, salaryCap, rosterSize, visibilityMap}:
 
     return(
         <>
-            <div>
-                <TextDiv text={teamData.owner.user_name} className="owner" />
+            <div className="teamGroup">
+                <div>
+                    <TextDiv text={teamData.owner.user_name} className="owner" />
+                </div>
+                <table className="playersTable">
+                    <thead className="header_row">
+                    <tr>
+                        <td><Text text="Player" className="header_row"/></td>
+                        <td>Position</td>
+                        <td>Points</td>
+                        <td>Round</td>
+                        <td>Keep?</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {playerRows}
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td></td>
+                        <td><Text text="Total" className="summary" /></td>
+                        <td><Text text={teamState.total_points.toString()} className={teamState.total_points_class} /></td>
+                        <td></td>
+                        <td><button onClick={clearAllCallback}>Clear All</button></td>
+                    </tr>
+                    </tfoot>
+                </table>
             </div>
-            <table>
-                <thead className="header_row">
-                <tr>
-                    <th>Player</th>
-                    <th>Position</th>
-                    <th>Points</th>
-                    <th>Round</th>
-                    <th>Keep?</th>
-                </tr>
-                </thead>
-                <tbody>
-                {playerRows}
-                </tbody>
-                <tfoot>
-                <tr>
-                    <td></td>
-                    <td><Text text="Total" className="summary" /></td>
-                    <td><Text text={teamState.total_points.toString()} className={teamState.total_points_class} /></td>
-                    <td></td>
-                    <td><button onClick={clearAllCallback}>Clear All</button></td>
-                </tr>
-                </tfoot>
-            </table>
         </>
     )
 }

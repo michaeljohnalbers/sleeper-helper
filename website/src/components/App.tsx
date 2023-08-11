@@ -36,7 +36,9 @@ export default function App() {
         <>
             <TopBox year={year} cap={season.cap} visibilityMap={visibleState} callback={visibleCallback} />
             <div className="scrollBox">
+                <div className="teamsGroup">
                 {teamList}
+                </div>
             </div>
             <TextDiv text={"Player data gathered on " + season.metadata.player_data_pull_date} className="footnote" />
             <TextDiv text={"Player round cost last updated on " + season.metadata.player_rankings_gen_date} className="footnote" />
