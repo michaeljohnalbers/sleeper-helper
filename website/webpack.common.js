@@ -2,7 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-    entry: './src/index.ts',
+    entry: './src/index.tsx',
     plugins: [
         // Docs: https://webpack.js.org/plugins/html-webpack-plugin/
         new HtmlWebpackPlugin({
@@ -10,7 +10,8 @@ module.exports = {
             favicon: 'src/icons/favicon.ico',
             meta: {
                 viewport: 'width=device-width, initial-scale=1'
-            }
+            },
+            template: "src/index.html"
         }),
     ],
     module: {
