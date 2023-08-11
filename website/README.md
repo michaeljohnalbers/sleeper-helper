@@ -8,6 +8,7 @@ website uses:
 * [pnpm](https://pnpm.io) for package management
 * [Webpack](https://webpack.js.org) for bundling & development help (See https://webpack.js.org/guides/ for lots of help)
 * [Typescript](https://www.typescriptlang.org)
+* [React](https://react.dev/)
 
 Webpack is set up to provide development and production support. See the sections below for details.
 
