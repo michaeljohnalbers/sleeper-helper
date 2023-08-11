@@ -4,7 +4,10 @@ import {PlayerState, TeamState} from "../types/state";
 import PlayerRow from "./PlayerRow";
 import Text, {TextDiv} from "./Text";
 
-export default function Team({teamData, salaryCap, rosterSize}: {teamData: TeamData, salaryCap : number, rosterSize: number}) {
+import {VisibilityMap} from "../types/misc";
+
+export default function Team({teamData, salaryCap, rosterSize, visibilityMap}:
+                                 {teamData: TeamData, salaryCap : number, rosterSize: number, visibilityMap: VisibilityMap}) {
     const [teamState, setTeamState] = useState(new TeamState(teamData))
 
     function keepCallback(playerIndex: number) {
@@ -22,7 +25,9 @@ export default function Team({teamData, salaryCap, rosterSize}: {teamData: TeamD
     }
 
     let playerRows : React.JSX.Element[] = []
-    teamState.players.forEach((playerState, index) => {
+    teamState.players
+        .filter(playerState => visibilityMap.get(playerState.playerData.position))
+        .forEach((playerState, index) => {
         playerRows.push(<PlayerRow playerState={playerState} keepCallback={()=>keepCallback(index)}/>);
     });
 

@@ -13,20 +13,29 @@ export default function App() {
         ["K", true],
         ["DEF", true],
     ]);
-    const [visible, setVisible] = useState(visibilityMap)
+    const [visibleState, setVisibleState] = useState(visibilityMap)
+    let positionsArray: string[] = [];
+    visibilityMap.forEach((_: boolean, key: string)=>positionsArray.push(key));
+
+    function visibleCallback(position: string) {
+        let newVisibilityState = new Map(visibleState);
+        let visible = newVisibilityState.get(position);
+        newVisibilityState.set(position, ! visible);
+        setVisibleState(newVisibilityState);
+    }
 
     const year = new Date().getFullYear()
     const yearIndex = year.toString() as keyof typeof keeper_data;
     const season = keeper_data[yearIndex]
 
     const teamList= season.teams.map(team =>
-        <Team teamData={team} salaryCap={season.cap.points} rosterSize={season.roster_size}/>
+        <Team teamData={team} salaryCap={season.cap.points} rosterSize={season.roster_size} visibilityMap={visibleState}/>
     );
 
     return(
         <>
-            <TopBox year={year} cap={season.cap} />
-            <div>
+            <TopBox year={year} cap={season.cap} visibilityMap={visibleState} callback={visibleCallback} />
+            <div className="scrollBox">
                 {teamList}
             </div>
             <TextDiv text={"Player data gathered on " + season.metadata.player_data_pull_date} className="footnote" />

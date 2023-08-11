@@ -1,0 +1,1 @@
+export type VisibilityMap = Map<string, boolean>

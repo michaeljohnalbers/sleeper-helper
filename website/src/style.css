@@ -81,6 +81,10 @@ This is so that the header (namely, salary cap) info is always visible.
   color: red;
 }
 
+.strike {
+  text-decoration: line-through;
+}
+
 .footnote {
   font-size: 0.75em;
 }
