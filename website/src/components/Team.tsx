@@ -28,7 +28,7 @@ export default function Team({teamData, salaryCap, rosterSize, visibilityMap}:
     teamState.players
         .filter(playerState => visibilityMap.get(playerState.playerData.position))
         .forEach((playerState, index) => {
-        playerRows.push(<PlayerRow playerState={playerState} keepCallback={()=>keepCallback(index)}/>);
+        playerRows.push(<PlayerRow key={playerState.playerData.name} playerState={playerState} keepCallback={()=>keepCallback(index)}/>);
     });
 
     return(

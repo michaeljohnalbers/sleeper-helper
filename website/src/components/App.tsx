@@ -29,7 +29,7 @@ export default function App() {
     const season = keeper_data[yearIndex]
 
     const teamList= season.teams.map(team =>
-        <Team teamData={team} salaryCap={season.cap.points} rosterSize={season.roster_size} visibilityMap={visibleState}/>
+        <Team key={team.owner.user_name} teamData={team} salaryCap={season.cap.points} rosterSize={season.roster_size} visibilityMap={visibleState}/>
     );
 
     return(
