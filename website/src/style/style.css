@@ -7,7 +7,7 @@ body {
   font-family: "Open Sans",Arial,Helvetica,sans-serif;
 }
 
-.season{
+.season {
   text-align: center;
 }
 
@@ -25,14 +25,12 @@ body {
   font-size: 0.75em;
 }
 
-/*
 .teams {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   flex-wrap: wrap;
-  align-items: center;
+  justify-content: space-evenly;
 }
- */
 
 .team {
   background-color: rgba(58, 70, 91, 0.5);

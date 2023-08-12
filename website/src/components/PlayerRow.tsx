@@ -12,13 +12,13 @@ export default function PlayerRow({playerState, keepCallback}:
     return(
         <>
             <tr>
-                <th scope="row">
+                <td>
                     <Text text={playerName} className="plain_text" />
-                </th>
+                </td>
                 <td>
                     <Text text={player.position} className="plain_text" />
                 </td>
-                <td>
+                <td className="points">
                     <Text text={playerState.points_scored_string} className="plain_text" />
                 </td>
                 <td>

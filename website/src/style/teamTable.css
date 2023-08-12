@@ -7,6 +7,10 @@ https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Styling_table
     border-collapse: collapse;
 }
 
+.teamTable {
+    white-space: nowrap;
+}
+
 .owner {
     font-size: 150%;
 }
@@ -38,31 +42,18 @@ https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Styling_table
     padding: 5px;
 }
 
-/* Player */
-.teamTable thead th:nth-child(1) {
-    width: 40%;
-}
-
-/* Position */
-.teamTable thead th:nth-child(2) {
-    width: 10%;
-}
-
-/* Points*/
-.teamTable thead th:nth-child(3) {
-    width: 15%;
-}
-
-/* Round */
-.teamTable thead th:nth-child(4) {
-    width: 15%;
-}
-
-/* Keep? */
-.teamTable thead th:nth-child(5) {
-    width: 20%;
+/*
+This is a hack to force the points and round columns to a larger size to allow
+the -> xxx to be added without resizing the overall table. There's probably a better
+way to do this. But I don't know it. And skip it on mobile as it makes the table too
+wide for the screen.
+*/
+@media screen and (min-width: 640px) {
+    .points {
+        min-width: 5em;
+    }
 }
 
 .teamTable tbody tr:nth-child(even) {
-  background-color: #1f2431;
+    background-color: #1f2431;
 }

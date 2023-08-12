@@ -6,6 +6,7 @@ import Text, {TextDiv} from "./Text";
 
 import {VisibilityMap} from "../types/misc";
 
+let arrow = "->";
 export default function Team({teamData, salaryCap, rosterSize, visibilityMap}:
                                  {teamData: TeamData, salaryCap : number, rosterSize: number, visibilityMap: VisibilityMap}) {
     const [teamState, setTeamState] = useState(new TeamState(teamData))
