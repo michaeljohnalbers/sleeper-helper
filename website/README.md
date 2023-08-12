@@ -5,16 +5,17 @@ for instructions on setting up the bucket.
 The website is a UI for interacting with the data provided from the [scraper](../scraper).
 
 website uses:
-* [pnpm](https://pnpm.io) for package management
-* [Webpack](https://webpack.js.org) for bundling & development help (See https://webpack.js.org/guides/ for lots of help)
+* [pnpm](https://pnpm.io)
+* [Webpack](https://webpack.js.org)
 * [Typescript](https://www.typescriptlang.org)
 * [React](https://react.dev/)
 
-Webpack is set up to provide development and production support. See the sections below for details.
+Webpack is set up to provide development and production support. See https://webpack.js.org/guides/ for lots of help.
+See the sections below for details specific to this project.
 
 ## Development
 
-**There is no need to run `pnpm build` in development, the dev server will handle everything for you.
+**There is no need to run `pnpm build` in development, the dev server will handle everything for you.**
 
 ### Run
 To test locally:

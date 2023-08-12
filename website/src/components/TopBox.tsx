@@ -16,13 +16,13 @@ export default function TopBox({year, cap, visibilityMap, callback}:
 
     return(
         <>
-            <div className="topBox">
-                <TextDiv text={season} className="season" />
-                <Text text="Keeper Limits" className="keeper_limit_header" />
+            <div>
+                <TextDiv text={season} className="plain_text" />
+                <Text text="Keeper Limits" className="plain_text" />
                 <ul>
                     <li><Text text={capPoints} className="plain_text" /></li>
                 </ul>
-                <div className="invisible_on_mobile">
+                <div>
                     <Text text="Show/Hide" className="plain_text" />
                     {positionButtons}
                 </div>

@@ -12,9 +12,9 @@ export default function PlayerRow({playerState, keepCallback}:
     return(
         <>
             <tr>
-                <td>
+                <th scope="row">
                     <Text text={playerName} className="plain_text" />
-                </td>
+                </th>
                 <td>
                     <Text text={player.position} className="plain_text" />
                 </td>

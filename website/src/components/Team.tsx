@@ -33,18 +33,18 @@ export default function Team({teamData, salaryCap, rosterSize, visibilityMap}:
 
     return(
         <>
-            <div className="teamGroup">
-                <div>
-                    <TextDiv text={teamData.owner.user_name} className="owner" />
-                </div>
-                <table className="playersTable">
-                    <thead className="header_row">
+            <div>
+                <table>
+                    <thead>
                     <tr>
-                        <td><Text text="Player" className="header_row"/></td>
-                        <td>Position</td>
-                        <td>Points</td>
-                        <td>Round</td>
-                        <td>Keep?</td>
+                        <th colSpan={5}>{teamData.owner.user_name}</th>
+                    </tr>
+                    <tr>
+                        <th scope="col">Player</th>
+                        <th scope="col">Position</th>
+                        <th scope="col">Points</th>
+                        <th scope="col">Round</th>
+                        <th scope="col">Keep?</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -52,8 +52,7 @@ export default function Team({teamData, salaryCap, rosterSize, visibilityMap}:
                     </tbody>
                     <tfoot>
                     <tr>
-                        <td></td>
-                        <td><Text text="Total" className="summary" /></td>
+                        <th scope="row" colSpan={2}>Total Points</th>
                         <td><Text text={teamState.total_points.toString()} className={teamState.total_points_class} /></td>
                         <td></td>
                         <td><button onClick={clearAllCallback}>Clear All</button></td>
