@@ -1,0 +1,68 @@
+/*
+Styling for the players table. Largely from
+https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Styling_tables
+ */
+.teamTable table {
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.owner {
+    font-size: 150%;
+}
+
+.playerHeader {
+    font-size: 110%;
+    text-decoration: underline;
+}
+
+/* Puts a little vertical spacing between each player's row */
+.teamTable tbody td, tr {
+    padding-bottom: 5px;
+    padding-top: 5px;
+}
+
+.teamTable tbody td, tfoot td {
+    text-align: center;
+}
+
+.teamTable tfoot {
+    font-size: 115%;
+}
+
+.teamTable tfoot th {
+    text-align: right;
+}
+
+.teamTable tfoot td {
+    padding: 5px;
+}
+
+/* Player */
+.teamTable thead th:nth-child(1) {
+    width: 40%;
+}
+
+/* Position */
+.teamTable thead th:nth-child(2) {
+    width: 10%;
+}
+
+/* Points*/
+.teamTable thead th:nth-child(3) {
+    width: 15%;
+}
+
+/* Round */
+.teamTable thead th:nth-child(4) {
+    width: 15%;
+}
+
+/* Keep? */
+.teamTable thead th:nth-child(5) {
+    width: 20%;
+}
+
+.teamTable tbody tr:nth-child(even) {
+  background-color: #1f2431;
+}

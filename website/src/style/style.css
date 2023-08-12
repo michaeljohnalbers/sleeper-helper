@@ -1,13 +1,14 @@
-/**
-  sleeper dark: #181c28
- */
 
-@import "table.css";
+@import "teamTable.css";
 
 body {
-  background-color: rgb(248, 250, 251);
-  color: rgb(33, 33, 33);
+  background-color: #181c28;
+  color: #ffffff;
   font-family: "Open Sans",Arial,Helvetica,sans-serif;
+}
+
+.season{
+  text-align: center;
 }
 
 .plain_text {}
@@ -22,6 +23,25 @@ body {
 
 .footnote {
   font-size: 0.75em;
+}
+
+/*
+.teams {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center;
+}
+ */
+
+.team {
+  background-color: rgba(58, 70, 91, 0.5);
+  margin: 10px;
+  padding: 3px;
+}
+
+.visibilityTable {
+  table-layout: fixed;
 }
 
 

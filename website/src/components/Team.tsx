@@ -33,13 +33,13 @@ export default function Team({teamData, salaryCap, rosterSize, visibilityMap}:
 
     return(
         <>
-            <div>
-                <table>
+            <div className="team">
+                <table className="teamTable">
                     <thead>
-                    <tr>
+                    <tr className="owner">
                         <th colSpan={5}>{teamData.owner.user_name}</th>
                     </tr>
-                    <tr>
+                    <tr className="playerHeader">
                         <th scope="col">Player</th>
                         <th scope="col">Position</th>
                         <th scope="col">Points</th>
