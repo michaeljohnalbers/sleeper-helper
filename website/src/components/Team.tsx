@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import {TeamData} from "../types/keeper_data";
 import {PlayerState, TeamState} from "../types/state";
 import PlayerRow from "./PlayerRow";
-import Text, {TextDiv} from "./Text";
+import Text from "./Text";
 
 import {VisibilityMap} from "../types/misc";
 

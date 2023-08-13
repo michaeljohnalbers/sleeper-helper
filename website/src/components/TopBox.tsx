@@ -1,5 +1,5 @@
 import React from "react";
-import Text, {TextDiv} from "./Text";
+import Text from "./Text";
 import {Cap} from "../types/keeper_data";
 import {VisibilityMap} from "../types/misc";
 
@@ -17,13 +17,9 @@ export default function TopBox({year, cap, visibilityMap, callback}:
     return(
         <>
             <div>
-                <div className="season">
+                <div className="center-text">
                     <h1>{season}</h1>
-                </div>
-                <Text text="Keeper Limits" className="plain_text" />
-                <ul>
-                    <li><Text text={capPoints} className="plain_text" /></li>
-                </ul>
+                <Text text={"Keeper Limits: " + capPoints} className="plain_text" />
                 <table className="visibilityTable">
                     <tbody>
                     <tr>
@@ -32,6 +28,7 @@ export default function TopBox({year, cap, visibilityMap, callback}:
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </>
     )
