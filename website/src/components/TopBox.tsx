@@ -16,9 +16,8 @@ export default function TopBox({year, cap, visibilityMap, callback}:
 
     return(
         <>
-            <div>
-                <div className="center-text">
-                    <h1>{season}</h1>
+            <div className="center-text">
+                <h1>{season}</h1>
                 <Text text={"Keeper Limits: " + capPoints} className="plain_text" />
                 <table className="visibilityTable">
                     <tbody>
@@ -28,7 +27,6 @@ export default function TopBox({year, cap, visibilityMap, callback}:
                         </tr>
                     </tbody>
                 </table>
-                </div>
             </div>
         </>
     )

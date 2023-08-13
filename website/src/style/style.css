@@ -25,6 +25,22 @@ body {
   font-size: 0.75em;
 }
 
+.app {
+  display: flex;
+  flex-direction: column;
+}
+
+.appBody {
+  /*
+  This is the ugliest hack, but it gets the teams to scroll while leaving the header
+  and footer fixed in place. I don't understand why it works, and I've tried about
+  100 different SO answers that don't. So I'm leaving it here because I'm tired of
+  fighting with CSS.
+  */
+  height: 80vh;
+  overflow: scroll;
+}
+
 .teams {
   display: flex;
   flex-direction: row;
@@ -40,108 +56,9 @@ body {
 
 .visibilityTable {
   table-layout: fixed;
-  margin: auto;
+  margin: auto; /* To center the table within the container */
 }
 
-
-/***********************
- Old Styling below
-***********************/
-
-/*
-td {
-  padding-right: 0.75em;
-}
-
-.app {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.topBox {
-  height: 15vh; /* When using 20% (to fill all 100% of vh, with scroll box) this creates a main page scrollbar. /
-  width: 70vw;
-  margin: 0 auto; /* Center horizontally /
-  border-bottom: 2px;
-}
-
-.season {
-  text-decoration: underline;
-  text-align: center;
-  font-size: 1.75em;
-}
-
-.keeper_limit_header {
-}
-
-.position_button {
-  margin-left: 0.5em;
-  padding-left: 1em;
-  margin-right: 0.5em;
-  padding-right: 1em;
-}
-
-/*
-Puts all of the teams into a container that scrolls vertically.
-This is so that the header (namely, salary cap) info is always visible.
-/
-.scrollBox {
-  height: 80vh;
-  width: 100vw;
-  overflow: scroll;
-}
-
-.teamsGroup {
-  /* TODO: get all teams the same size and aligned nicely/
-  display: flex;
-  flex-wrap: wrap;
-  /* TODO: this makes things look good on a computer (wide monitor), but in mobile it cuts off the sides of each team /
-  /*justify-content: center;/
-}
-
-.teamGroup {
-  padding-right: 2.0em;
-  padding-bottom: 1em;
-}
-
-.owner {
-  font-size: 1.2em;
-  background-color: #0374e7;
-  color: white;
-  padding-left: 0.1em;
-}
-
-.playersTable {
-  padding-top: 0.2em;
-}
-
-.header_row,
-.summary
-{
-  font-weight: bold;
-}
-
-.summary {
-  text-align: end;
-}
-
-.plain_text {}
-
-.error_text {
-  color: red;
-}
-
-.strike {
-  text-decoration: line-through;
-}
-
-.footnote {
-  font-size: 0.75em;
-}
-
-*/
 @media only screen and (max-width: 600px) {
   body {
     font-size: 80%;

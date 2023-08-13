@@ -35,13 +35,19 @@ export default function App() {
     return(
         <>
             <div className="app">
-                <TopBox year={year} cap={season.cap} visibilityMap={visibleState} callback={visibleCallback} />
-                <div className="teams">
-                    {teamList}
+                <div className="appHeader">
+                    <TopBox year={year} cap={season.cap} visibilityMap={visibleState} callback={visibleCallback} />
                 </div>
-                <TextDiv text={"Player data gathered on " + season.metadata.player_data_pull_date} className="footnote" />
-                <TextDiv text={"Player round cost last updated on " + season.metadata.player_rankings_gen_date} className="footnote" />
-                <TextDiv text={season.metadata.notes} className="footnote" />
+                <div className="appBody">
+                    <div className="teams">
+                        {teamList}
+                    </div>
+                </div>
+                <div className="appFooter">
+                    <TextDiv text={"Player data gathered on " + season.metadata.player_data_pull_date} className="footnote" />
+                    <TextDiv text={"Player round cost last updated on " + season.metadata.player_rankings_gen_date} className="footnote" />
+                    <TextDiv text={season.metadata.notes} className="footnote" />
+                </div>
             </div>
         </>
     )
