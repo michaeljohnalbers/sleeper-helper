@@ -54,7 +54,8 @@ export default function Team({teamData, salaryCap, rosterSize, visibilityMap}:
                     <tfoot>
                     <tr>
                         <th scope="row" colSpan={2}>Total Points</th>
-                        <td><Text text={teamState.total_points.toString()} className={teamState.total_points_class} /></td>
+                        <td><Text text={teamState.total_points.toString() + " (" + (salaryCap - teamState.total_points) + ")"}
+                                  className={teamState.total_points_class} /></td>
                         <td></td>
                         <td><button onClick={clearAllCallback}>Clear All</button></td>
                     </tr>
