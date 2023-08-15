@@ -4,11 +4,18 @@ https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Styling_table
  */
 .teamTable table {
     table-layout: fixed;
+    width: 100%;
     border-collapse: collapse;
 }
 
 .teamTable {
     white-space: nowrap;
+}
+@media only screen and (max-width: 600px) {
+    /* This makes the team tables fit in the screen much better on mobile.*/
+    .teamTable {
+        white-space: break-spaces;
+    }
 }
 
 .owner {
@@ -45,10 +52,14 @@ https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Styling_table
 /*
 This is a hack to force the points and round columns to a larger size to allow
 the -> xxx to be added without resizing the overall table. There's probably a better
-way to do this. But I don't know it. And skip it on mobile as it makes the table too
-wide for the screen.
+way to do this. But I don't know it.
 */
 @media screen and (min-width: 640px) {
+    .points {
+        min-width: 7em;
+    }
+}
+@media screen and (max-width: 600px) {
     .points {
         min-width: 5em;
     }

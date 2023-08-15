@@ -7,8 +7,9 @@ body {
   font-family: "Open Sans",Arial,Helvetica,sans-serif;
 }
 
-.center-text {
+.topBox {
   text-align: center;
+  margin-bottom: 5px;
 }
 
 .plain_text {}
@@ -50,8 +51,9 @@ body {
 
 .team {
   background-color: rgba(58, 70, 91, 0.5);
-  margin: 10px;
-  padding: 3px;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  padding: 1px;
 }
 
 .visibilityTable {
