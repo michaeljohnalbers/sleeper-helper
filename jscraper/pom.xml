@@ -18,6 +18,11 @@
   </properties>
 
   <dependencies>
+    <dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.16.1</version>
+  </dependency>
   </dependencies>
 
   <build>
@@ -73,7 +78,7 @@
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>com.albersm.sleeper.Scraper</mainClass>
+                  <mainClass>com.albersm.sleeperhelper.Scraper</mainClass>
                 </transformer>
               </transformers>
             </configuration>

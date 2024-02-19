@@ -16,6 +16,9 @@ Cargo.lock
 # Added by cargo
 /target
 
+# Java
+dependency-reduced-pom.xml
+
 # Web stuff
 node_modules
 dist
