@@ -43,7 +43,7 @@ public class Sleeper {
             var rosterDetails = new RosterDetails(user.displayName(), user.userId(), new LinkedList<>());
 
             for (var roster : leagueDetails.data().leagueRosters()) {
-                if (roster.ownerId().equals(rosterDetails.owner())) {
+                if (roster.ownerId().equals(rosterDetails.ownerId())) {
                     for (var playerEntry : roster.playerMap().entrySet()) {
                         String playerId = playerEntry.getKey();
                         var pointsScored = calculatePlayerPointsScored(playerId, allPlayerStats,
@@ -59,24 +59,24 @@ public class Sleeper {
                         PlayerDetails playerDetails = new PlayerDetails(
                                 isActive(player.status()),
                                 formatName(player),
-                                Optional.of(player.position()).orElse(UNKNOWN),
+                                Optional.ofNullable(player.position()).orElse(UNKNOWN),
                                 pointsScored,
-                                Optional.of(player.team()).orElse(NA),
-                                Optional.of(playersIds.yahooId()).orElse(-1));
+                                Optional.ofNullable(player.team()).orElse(NA),
+                                Optional.ofNullable(playersIds.yahooId()).orElse(-1));
                         rosterDetails.players().add(playerDetails);
                     }
+
+                    rosterDetails.players().sort((a,b) -> {
+                        // Reverse sort (descending) points
+                        var pointsCompare = Integer.compare(b.pointsScored(), a.pointsScored());
+                        if (0 == pointsCompare) {
+                            return a.name().compareTo(b.name());
+                        }
+                        return pointsCompare;
+                    });
+
+                    break;
                 }
-
-                rosterDetails.players().sort((a,b) -> {
-                    // Reverse sort (descending) points
-                    var pointsCompare = Integer.compare(b.pointsScored(), a.pointsScored());
-                    if (0 == pointsCompare) {
-                        return a.name().compareTo(b.name());
-                    }
-                    return pointsCompare;
-                });
-
-                break;
             }
             this.rosterDetails.add(rosterDetails);
         }
@@ -102,12 +102,13 @@ public class Sleeper {
             if (playerStats.playerId().equals(playerId)) {
                 float pointsScored = 0.0F;
 
+                // TODO: these are coming up 1 point short in some cases
                 for (var scoringSetting : scoringSettings.entrySet()) {
-                    var statValue = playerStats.stats().get(scoringSetting.getKey());
+                    var statValue = playerStats.stats().getOrDefault(scoringSetting.getKey(), 0.0F);
                     pointsScored += (statValue * scoringSetting.getValue());
                 }
 
-                return (int) pointsScored;
+                return (int) Math.round(pointsScored);
             }
         }
 
@@ -115,8 +116,8 @@ public class Sleeper {
     }
 
     private String formatName(SleeperLeaguePlayer player) {
-        var firstName = Optional.of(player.firstName()).orElse(UNKNOWN);
-        var lastName = Optional.of(player.lastName()).orElse(UNKNOWN);
+        var firstName = Optional.ofNullable(player.firstName()).orElse(UNKNOWN);
+        var lastName = Optional.ofNullable(player.lastName()).orElse(UNKNOWN);
         return firstName + " " + lastName;
     }
 
@@ -169,50 +170,6 @@ public class Sleeper {
 
         return OBJECT_MAPPER.readValue(json, SleeperLeagueDetails.class);
     }
-
-    /*
-    impl Sleeper {
-    fn get_league_settings(&self, league_id: String) -> Result<LeagueSettings, Box<dyn Error>> {
-        // This API call can be seen when loading the initial league page at sleeper.com.
-        let prefix = r#"{
-  "operationName": "metadata",
-  "variables":{},
-  "query":"query metadata {metadata(type: \"league_history\", key: \""#;
-        let last = r#"\"){ data }}"
-}"#;
-
-        let query = format!("{}{}{}", prefix, league_id, last);
-
-        let response = self.graphql_request(query, "Failed to retrieve league metadata.")?;
-
-        let mut league_settings = LeagueSettings {
-            previous_year_scoring_settings: HashMap::new(),
-            roster_size: 0,
-        };
-
-        let previous_year = self.year - 1;
-        let league_metadata: Metadata = response.json::<Metadata>().unwrap();
-        for lineage in league_metadata.data.metadata.data.lineage.iter() {
-            if lineage.season == self.year.to_string() {
-                league_settings.roster_size = lineage.roster_positions.len() as i32;
-            }
-            if lineage.season == previous_year.to_string() {
-                league_settings.previous_year_scoring_settings = lineage.scoring_settings.clone();
-            }
-        }
-
-        if 0 == league_settings.roster_size
-            || league_settings.previous_year_scoring_settings.len() == 0
-        {
-            return Err(Box::new(GeneralError::from_str(
-                "No league lineage found for {previous_year} or {self.year}.",
-            )));
-        }
-
-        Ok(league_settings)
-    }
-}
-     */
 
     private record LeagueSettings(Map<String, Float> previousYearScoringSettings, int rosterSize) {}
 
