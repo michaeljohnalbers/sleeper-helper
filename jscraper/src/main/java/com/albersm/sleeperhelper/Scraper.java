@@ -34,6 +34,8 @@ public class Scraper {
         var now = LocalDateTime.now();
         var year = now.getYear();
 
+        year = 2023; // TODO: remove
+
         var fantasyProsData = new FantasyPros(apiKey, year).getRankings();
         var sleeperData = new Sleeper(jwt, year);
     }
