@@ -26,7 +26,9 @@ public class Scraper {
 
     private static final Map<Integer, Cap> CAP = Map.of(
             2022, new Cap(1300),
-            2023, new Cap(1200));
+            2023, new Cap(1200),
+            2024, new Cap(1200)  // Not final
+    );
 
     private Scraper(String[] args) throws Exception {
         if (args.length != 2) {
@@ -39,8 +41,6 @@ public class Scraper {
 
         var now = LocalDateTime.now();
         var year = now.getYear();
-
-        year = 2023; // TODO: remove
 
         var fantasyProsData = new FantasyPros(apiKey, year).getRankings();
         var sleeperData = new Sleeper(jwt, year);
