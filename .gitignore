@@ -26,4 +26,4 @@ dist
 # Mine
 .idea
 *.iml
-sleeper_player_list.json
+responseCache/

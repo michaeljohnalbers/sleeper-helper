@@ -1,6 +1,8 @@
 package com.albersm.sleeperhelper.sleeper;
 
 import com.albersm.sleeperhelper.sleeper.model.*;
+import com.albersm.sleeperhelper.util.CacheableRequest;
+import com.albersm.sleeperhelper.util.ThrottlingCacheableRequest;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.io.IOException;
@@ -8,13 +10,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.time.Period;
 import java.util.*;
 
 import static com.albersm.sleeperhelper.Scraper.OBJECT_MAPPER;
+import static com.albersm.sleeperhelper.util.HttpUtils.checkResponse;
 
 public class Sleeper {
     private static final String UNKNOWN = "UNKNOWN";
@@ -25,12 +25,14 @@ public class Sleeper {
     private final int rosterSize;
     private final int year;
 
+    // TODO: player stats by week:
+    //   https://api.sleeper.com/stats/nfl/player/8168?season_type=regular&season=2023&grouping=week
 
     public Sleeper(String jwt, int year) throws Exception {
         this.jwt = jwt;
         this.year = year;
 
-        var playerIds = getPlayerIds();
+        Map<String, PlayerIds> playerIds = getPlayerIds();
         var leagueIds = getLeagueIds();
         var currentLeagueId = leagueIds.leagueId();
         var leagueDetails = getLeagueDetail(currentLeagueId);
@@ -54,6 +56,18 @@ public class Sleeper {
                             throw new RuntimeException("No player Ids found for " + playerId);
                         }
 
+                        Map<Integer, GameStats> playerGameStats = getPlayerGameStats(playerId, year-1);
+                        final Map<Integer, CalculatedGameStats> calculatedGameStats = new HashMap<>();
+                        playerGameStats.forEach((key, value) -> {
+                            if (value != null) {
+                                float totalPoints = calculatePointsScoredExact(value.stats(),
+                                        leagueSettings.previousYearScoringSettings());
+                                calculatedGameStats.put(key, new CalculatedGameStats(value.stats(), value.week(), totalPoints));
+                            } else {
+                                calculatedGameStats.put(key, null);
+                            }
+                        });
+
                         SleeperLeaguePlayer player = playerEntry.getValue();
 
                         PlayerDetails playerDetails = new PlayerDetails(
@@ -62,7 +76,8 @@ public class Sleeper {
                                 Optional.ofNullable(player.position()).orElse(UNKNOWN),
                                 pointsScored,
                                 Optional.ofNullable(player.team()).orElse(NA),
-                                Optional.ofNullable(playersIds.yahooId()).orElse(-1));
+                                Optional.ofNullable(playersIds.yahooId()).orElse(-1),
+                                calculatedGameStats);
                         rosterDetails.players().add(playerDetails);
                     }
 
@@ -102,7 +117,6 @@ public class Sleeper {
             if (playerStats.playerId().equals(playerId)) {
                 float pointsScored = 0.0F;
 
-                // TODO: these are coming up 1 point short in some cases
                 for (var scoringSetting : scoringSettings.entrySet()) {
                     var statValue = playerStats.stats().getOrDefault(scoringSetting.getKey(), 0.0F);
                     pointsScored += (statValue * scoringSetting.getValue());
@@ -113,6 +127,18 @@ public class Sleeper {
         }
 
         throw new RuntimeException("No status found for player Id " + playerId);
+    }
+
+    private float calculatePointsScoredExact(Map<String, Float> playerPointsCategories,
+                                             Map<String, Float> scoringSettings) {
+        float pointsScored = 0.0F;
+
+        for (var scoringSetting : scoringSettings.entrySet()) {
+            var statValue = playerPointsCategories.getOrDefault(scoringSetting.getKey(), 0.0F);
+            pointsScored += (statValue * scoringSetting.getValue());
+        }
+
+        return pointsScored;
     }
 
     private String formatName(SleeperLeaguePlayer player) {
@@ -214,34 +240,31 @@ public class Sleeper {
         return new LeagueSettings(previousYearScoringSettings, rosterSize);
     }
 
+    private Map<Integer, GameStats> getPlayerGameStats(String playerId, int previousYear) throws IOException,
+            InterruptedException {
+
+        // TODO: need to throttle this
+
+        var uri = URI.create("https://api.sleeper.com/stats/nfl/player/" + playerId + "?season_type=regular&season="
+                + previousYear + "&grouping=week");
+        String cacheFile = "gameStats" + playerId + ".json";
+        String description = "Failed to retrieve player game stats for player Id '" + playerId
+                + "' for season " + previousYear + ".";
+        var jacksonType = new TypeReference<Map<Integer, GameStats>>(){};
+        var r = new ThrottlingCacheableRequest<>(client, uri, cacheFile, description, jacksonType, Period.ofDays(30));
+        return r.getResponse();
+    }
+
     private Map<String, PlayerIds> getPlayerIds() throws IOException, InterruptedException {
         // Fetching the player list from Sleeper is kind of slow. Keep a local cached copy
         // to speed things up.
 
-        // If this changes, update .gitignore
-        var playerListPath = Paths.get("sleeper_player_list.json");
-
-        boolean getList = true;
-
-        var playerListFile = playerListPath.toFile();
-        if (playerListFile.exists()) {
-            var lastUpdated = Instant.ofEpochMilli(playerListFile.lastModified());
-            var maxAge = Instant.now().minus(1, ChronoUnit.DAYS);
-            getList = lastUpdated.isBefore(maxAge);
-        }
-
-        Map<String, PlayerIds> playerIdsMap;
-        if (getList) {
-            var uri = URI.create("https://api.sleeper.app/v1/players/nfl");
-            var request = HttpRequest.newBuilder().uri(uri).build();
-            var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            var body = response.body();
-            Files.writeString(playerListPath, body);
-            playerIdsMap = OBJECT_MAPPER.readValue(body, new TypeReference<>() {});
-        } else {
-            playerIdsMap = OBJECT_MAPPER.readValue(playerListFile, new TypeReference<>() {});
-        }
-        return playerIdsMap;
+        var uri = URI.create("https://api.sleeper.app/v1/players/nfl");
+        String cacheFile = "sleeper_player_list.json";
+        String description = "Failed to retrieve player list.";
+        var jacksonType = new TypeReference<Map<String, PlayerIds>>(){};
+        var r = new CacheableRequest<Map<String, PlayerIds>>(client, uri, cacheFile, description, jacksonType);
+        return r.getResponse();
     }
 
     private List<SleeperPlayerStats> getPlayerStats() throws IOException, InterruptedException {
@@ -254,13 +277,6 @@ public class Sleeper {
         return OBJECT_MAPPER.readValue(response.body(), new TypeReference<>() {});
     }
 
-    private <T> HttpResponse<T> checkResponse(HttpResponse<T> response, String description) {
-        if (response.statusCode() >= 400) {
-            throw new RuntimeException(description + " Status code: " + response.statusCode()
-                    + ".\n==== Start Body ===\n" + response.body() + "\n=== End Body ===");
-        }
-        return response;
-    }
 
     private String graphqlRequest(String query, String failureDescription) throws Exception {
         var uri = URI.create("https://api.sleeper.app/graphql");
