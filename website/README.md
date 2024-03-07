@@ -13,6 +13,11 @@ website uses:
 Webpack is set up to provide development and production support. See https://webpack.js.org/guides/ for lots of help.
 See the sections below for details specific to this project.
 
+## Setup
+* Install pnpm (see above)
+* Install node (https://nodejs.org/en/download/package-manager#debian-and-ubuntu-based-linux-distributions)
+* Install packages: `pnpm install`
+
 ## Development
 
 **There is no need to run `pnpm build` in development, the dev server will handle everything for you.**

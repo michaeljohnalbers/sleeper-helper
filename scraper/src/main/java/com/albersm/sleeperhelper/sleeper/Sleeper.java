@@ -25,9 +25,6 @@ public class Sleeper {
     private final int rosterSize;
     private final int year;
 
-    // TODO: player stats by week:
-    //   https://api.sleeper.com/stats/nfl/player/8168?season_type=regular&season=2023&grouping=week
-
     public Sleeper(String jwt, int year) throws Exception {
         this.jwt = jwt;
         this.year = year;
@@ -242,8 +239,6 @@ public class Sleeper {
 
     private Map<Integer, GameStats> getPlayerGameStats(String playerId, int previousYear) throws IOException,
             InterruptedException {
-
-        // TODO: need to throttle this
 
         var uri = URI.create("https://api.sleeper.com/stats/nfl/player/" + playerId + "?season_type=regular&season="
                 + previousYear + "&grouping=week");
