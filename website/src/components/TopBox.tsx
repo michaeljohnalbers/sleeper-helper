@@ -11,7 +11,8 @@ export default function TopBox({year, cap, visibilityMap, callback}:
     let positionButtons : React.JSX.Element[] = [];
     visibilityMap.forEach((visible: boolean, position: string) => {
         let text = <Text text={position} className={visible ? 'plain_text' : 'strike'} />
-        positionButtons.push(<td><button key={position} className="position_button" onClick={() => callback(position)}>{text}</button></td>);
+        positionButtons.push(<td key={position}><button key={position} className="position_button"
+                                                        onClick={() => callback(position)}>{text}</button></td>);
     });
 
     return(

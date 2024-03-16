@@ -1,20 +1,27 @@
 import React, {useState} from "react";
 import {
-    autoPlacement,
     autoUpdate,
-    flip, FloatingFocusManager,
+    FloatingFocusManager,
     offset,
-    shift,
     useClick,
     useDismiss,
     useFloating,
     useInteractions,
     useRole
 } from "@floating-ui/react";
+import Text from "./Text";
 
 export default function PlayerName({playerName, className, stats, statsKeys}:
                                        {playerName: string, className: string, stats: Record<string, any>,
                                            statsKeys: Record<string, string>}) {
+    if (null == stats) {
+        return plainPlayerName(playerName, className);
+    } else {
+        return playerNameWithStats(playerName, className, stats, statsKeys);
+    }
+}
+
+function playerNameWithStats(playerName: string, className: string, stats: Record<string, any>, statsKeys: Record<string, string>) {
     const [isOpen, setIsOpen] = useState(false);
 
     const {refs, floatingStyles, context} = useFloating({
@@ -36,35 +43,43 @@ export default function PlayerName({playerName, className, stats, statsKeys}:
         role,
     ]);
 
-    let statRows : React.JSX.Element[] = []
-    // TODO: sort keys
+    let statRows: React.JSX.Element[] = []
+    // Appears to sort keys by default
     for (const statAlias in stats) {
         const statValue = stats[statAlias]
-        statRows.push(<tr>
+        statRows.push(<tr key={statAlias}>
             <td>{statsKeys[statAlias]}</td>
             <td>{statValue}</td>
         </tr>);
     }
+    const statsTable =
+        <table className="playerStatsTable">
+            <thead>
+            <tr>
+                <td colSpan={2}>Player Stats</td>
+            </tr>
+            </thead>
+            <tbody>
+            {statRows}
+            </tbody>
+        </table>
 
-    return(
+    return (
         <>
-            <span ref={refs.setReference} className={className} {...getReferenceProps()}>{playerName}</span>
+            <span ref={refs.setReference} className={className} {...getReferenceProps()} id={"playerName"}>{playerName}</span>
             {isOpen && (
                 <FloatingFocusManager context={context} modal={false}>
-                    <div ref={refs.setFloating} style={floatingStyles} id={"playerStatsPopover"} {...getFloatingProps()}>
-                        <table>
-                            <thead>
-                            <tr>
-                                <td colSpan={2}>Player Stats</td>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {statRows}
-                            </tbody>
-                        </table>
+                    <div ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
+                        {statsTable}
                     </div>
                 </FloatingFocusManager>
             )}
         </>
+    );
+}
+
+function plainPlayerName(playerName: string, className: string) {
+    return (
+        <Text className={className} text={playerName} />
     );
 }
