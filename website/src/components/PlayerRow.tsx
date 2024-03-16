@@ -1,9 +1,11 @@
 import React from "react";
+import PlayerName from "./PlayerName";
 import Text from "./Text";
 import {PlayerState} from "../types/state";
 
-export default function PlayerRow({playerState, keepCallback}:
-                                      {playerState: PlayerState, keepCallback: ()=>void}) {
+export default function PlayerRow({playerState, playerStatsKeys, keepCallback}:
+                                      {playerState: PlayerState, playerStatsKeys: Record<string, string>,
+                                          keepCallback: ()=>void}) {
     let player = playerState.playerData;
     let playerName = player.name
     if (player.position !== "DEF") {
@@ -13,7 +15,8 @@ export default function PlayerRow({playerState, keepCallback}:
         <>
             <tr>
                 <td>
-                    <Text text={playerName} className="plain_text" />
+                    <PlayerName playerName={playerName} className="plain_text" stats={player.stats}
+                                statsKeys={playerStatsKeys}/>
                 </td>
                 <td>
                     <Text text={player.position} className="plain_text" />

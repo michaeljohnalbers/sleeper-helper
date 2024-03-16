@@ -6,9 +6,10 @@ import Text from "./Text";
 
 import {VisibilityMap} from "../types/misc";
 
-let arrow = "->";
-export default function Team({teamData, salaryCap, rosterSize, visibilityMap}:
-                                 {teamData: TeamData, salaryCap : number, rosterSize: number, visibilityMap: VisibilityMap}) {
+const arrow = "->";
+export default function Team({teamData, salaryCap, rosterSize, playerStatsKeys, visibilityMap}:
+                                 {teamData: TeamData, salaryCap : number, rosterSize: number,
+                                     playerStatsKeys: Record<string, string>, visibilityMap: VisibilityMap}) {
     const [teamState, setTeamState] = useState(new TeamState(teamData))
 
     function keepCallback(playerIndex: number) {
@@ -29,7 +30,8 @@ export default function Team({teamData, salaryCap, rosterSize, visibilityMap}:
     teamState.players
         .filter(playerState => visibilityMap.get(playerState.playerData.position))
         .forEach((playerState, index) => {
-        playerRows.push(<PlayerRow key={playerState.playerData.name} playerState={playerState} keepCallback={()=>keepCallback(index)}/>);
+        playerRows.push(<PlayerRow key={playerState.playerData.name} playerState={playerState}
+                                   playerStatsKeys={playerStatsKeys} keepCallback={()=>keepCallback(index)}/>);
     });
 
     return(
@@ -107,7 +109,7 @@ function updateCost(teamState: TeamState) {
                 }
             }
             playerState.adjusted_points_scored = Math.round(multiplier * playerState.playerData.total_points);
-            point_cost_string += "->" + playerState.adjusted_points_scored.toString();
+            point_cost_string += arrow + playerState.adjusted_points_scored.toString();
         }
         playerState.points_scored_string = point_cost_string;
     }
@@ -140,7 +142,7 @@ function updateRoundCost(teamState: TeamState, rosterSize: number) {
                 }
             }
 
-            round_cost_string += "->" + modified_round.toString();
+            round_cost_string += arrow + modified_round.toString();
         }
         p.draft_round_cost_string = round_cost_string;
     }
