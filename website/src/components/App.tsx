@@ -3,6 +3,7 @@ import keeper_data from '../keeper_data.json'
 import Team from "./Team";
 import TopBox from "./TopBox";
 import {TextDiv} from "./Text";
+import {KeeperData} from "../types/keeper_data";
 
 export default function App() {
     let visibilityMap = new Map([
@@ -24,12 +25,20 @@ export default function App() {
         setVisibleState(newVisibilityState);
     }
 
-    const year = new Date().getFullYear()
-    const yearIndex = year.toString() as keyof typeof keeper_data;
-    const season = keeper_data[yearIndex]
+    let year = new Date().getFullYear() + 1;
+    // Find the first year with data. This is to make sure the site works after a year rolls over, but
+    // new data hasn't been generated.
+    let yearIndex;
+    do {
+        year--;
+        yearIndex = year.toString() as keyof typeof keeper_data;
+    } while (! (yearIndex in keeper_data));
+
+    const season: KeeperData = keeper_data[yearIndex]
 
     const teamList= season.teams.map(team =>
-        <Team key={team.owner.user_name} teamData={team} salaryCap={season.cap.points} rosterSize={season.roster_size} visibilityMap={visibleState}/>
+        <Team key={team.owner.user_name} teamData={team} salaryCap={season.cap.points} rosterSize={season.roster_size}
+              playerStatsKeys={season.metadata.player_stats_keys} visibilityMap={visibleState}/>
     );
 
     return(

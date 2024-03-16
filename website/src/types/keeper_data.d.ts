@@ -9,6 +9,7 @@ export interface Cap {
 export interface Metadata {
     player_data_pull_date: string;
     player_rankings_gen_date: string;
+    player_stats_keys?: Record<string, string>;
     notes: string;
 }
 
@@ -24,6 +25,7 @@ export interface PlayerData {
     position: string;
     team: string;
     total_points: number;
+    stats?: Record<string, any>;
 }
 
 export interface TeamData {

@@ -1,8 +1,10 @@
 /*
 Styling for the players table. Largely from
 https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Styling_tables
+
+The first child selectors (>) at so these don't affect the table in the player stats popover.
  */
-.teamTable table {
+.teamTable > table {
     table-layout: fixed;
     width: 100%;
     border-collapse: collapse;
@@ -65,6 +67,6 @@ way to do this. But I don't know it.
     }
 }
 
-.teamTable tbody tr:nth-child(even) {
+.teamTable > tbody tr:nth-child(even) {
     background-color: #1f2431;
 }

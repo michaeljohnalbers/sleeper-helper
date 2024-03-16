@@ -1,0 +1,22 @@
+.playerStatsTable {
+    /* Setting the background makes the table non-transparent. */
+    background-color: #181c28;
+    font-size: 85%;
+}
+
+#playerName {
+    /* To indicate the popover is available */
+    text-decoration: dotted underline;
+}
+
+.playerStatsTable thead {
+    background-color: #1f2431;
+    text-decoration: underline;
+}
+
+.playerStatsTable tbody td, tfoot td {
+    text-align: left;
+}
+
+.playerStatsTable tbody tr:nth-child(even) {
+}
