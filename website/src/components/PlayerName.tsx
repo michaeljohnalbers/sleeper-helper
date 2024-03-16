@@ -56,7 +56,7 @@ function playerNameWithStats(playerName: string, className: string, stats: Recor
         <table className="playerStatsTable">
             <thead>
             <tr>
-                <td colSpan={2}>Player Stats</td>
+                <td colSpan={2}>{playerName} Stats</td>
             </tr>
             </thead>
             <tbody>

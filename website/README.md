@@ -19,6 +19,7 @@ See the sections below for details specific to this project.
 * Install packages: `pnpm install`
 
 ## Development
+Useful design info: https://design.mindsphere.io/patterns/introduction.html and https://mui.com/material-ui/getting-started/
 
 **There is no need to run `pnpm build` in development, the dev server will handle everything for you.**
 
