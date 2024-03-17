@@ -1,10 +1,26 @@
 import React, {ReactElement} from 'react';
-import {Metadata, TeamData} from "../../types/keeper_data";
-import {DataGrid, GridColDef, GridRowsProp} from "@mui/x-data-grid";
+import {Cap, Metadata, TeamData} from "../../types/keeper_data";
+import {
+    DataGrid,
+    GridColDef,
+    GridRowId,
+    GridRowSelectionModel,
+    GridRowsProp,
+    GridSlotsComponentsProps
+} from "@mui/x-data-grid";
 import {Popover, Typography} from "@mui/material";
 import StatsTable from "./StatsTable";
+import TeamTableFooter from "./TeamTableFooter";
 
-export default function Team({teamData, metadata}:{teamData: TeamData, metadata: Metadata}) {
+type FooterPointTotal = number;
+
+declare module '@mui/x-data-grid' {
+  interface FooterPropsOverrides {
+    pointTotal: FooterPointTotal
+  }
+}
+
+export default function Team({teamData, metadata, cap}:{teamData: TeamData, metadata: Metadata, cap: Cap}) {
     const columns: GridColDef[] = [
         {field: "name", headerName: "Name"},
         {field: "position", headerName: "Position", maxWidth: 45},
@@ -41,6 +57,18 @@ export default function Team({teamData, metadata}:{teamData: TeamData, metadata:
 
     const open = Boolean(anchorEl);
 
+    const [pointTotal, setPointTotal] = React.useState(0);
+    const handleRowsChecked = (ids: GridRowSelectionModel) => {
+        const selectedIDs = new Set(ids);
+        let totalPoints = 0;
+        rows.forEach((row)=>{
+            if (selectedIDs.has(row.id as GridRowId)) {
+                totalPoints += row.points as number;
+            }
+        });
+        setPointTotal(totalPoints);
+    }
+
     return(
         <>
             <Typography variant="h5" align="center">{teamData.owner.user_name}</Typography>
@@ -50,10 +78,16 @@ export default function Team({teamData, metadata}:{teamData: TeamData, metadata:
                       density="compact"
                       disableRowSelectionOnClick
                       hideFooterPagination={true}
+                      onRowSelectionModelChange={handleRowsChecked}
                       slotProps={{
                           cell: {
                               onClick: handlePopoverOpen,
                           },
+                          footer: {pointTotal}
+                      }}
+                      slots={{
+                          footer: (props: NonNullable<GridSlotsComponentsProps['footer']>) => {
+                              return teamTableFooter(props, cap)}
                       }}
             />
             { /*Modality of Popover sucks, but everything else is much better to use than Popper. */}
@@ -68,4 +102,11 @@ export default function Team({teamData, metadata}:{teamData: TeamData, metadata:
             </Popover>
         </>
     );
+}
+
+function teamTableFooter(
+  props: NonNullable<GridSlotsComponentsProps['footer']>,
+  cap: Cap
+) {
+    return(<TeamTableFooter totalPoints={props.pointTotal} cap={cap.points} />);
 }
