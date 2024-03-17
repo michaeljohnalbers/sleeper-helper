@@ -51,7 +51,7 @@ export default function App() {
                               onClose={handleClose}>
                             {yearMenuItems}
                         </Menu>
-                        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                        <Typography variant="h4" component="div" sx={{ flexGrow: 1 }}>
                             Sleeper Helper
                         </Typography>
                     </Toolbar>

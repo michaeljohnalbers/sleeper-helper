@@ -9,6 +9,7 @@ website uses:
 * [Webpack](https://webpack.js.org)
 * [Typescript](https://www.typescriptlang.org)
 * [React](https://react.dev/)
+* [Material UI](https://mui.com/material-ui/getting-started/)
 
 Webpack is set up to provide development and production support. See https://webpack.js.org/guides/ for lots of help.
 See the sections below for details specific to this project.
@@ -19,7 +20,7 @@ See the sections below for details specific to this project.
 * Install packages: `pnpm install`
 
 ## Development
-Useful design info: https://design.mindsphere.io/patterns/introduction.html and https://mui.com/material-ui/getting-started/
+Useful design info: https://design.mindsphere.io/patterns/introduction.html 
 
 **There is no need to run `pnpm build` in development, the dev server will handle everything for you.**
 
