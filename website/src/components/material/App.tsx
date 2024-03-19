@@ -51,8 +51,12 @@ export default function App() {
                               onClose={handleClose}>
                             {yearMenuItems}
                         </Menu>
+                        {/* TODO: variants need to be smaller for mobile*/}
                         <Typography variant="h4" component="div" sx={{ flexGrow: 1 }}>
                             Sleeper Helper
+                        </Typography>
+                        <Typography variant="h6" component="div">
+                            {selectedYear} Season
                         </Typography>
                     </Toolbar>
                 </AppBar>

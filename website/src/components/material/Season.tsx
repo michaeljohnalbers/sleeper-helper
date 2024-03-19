@@ -11,7 +11,6 @@ export default function Season({season, keeperData}: {season: string, keeperData
 
     return(
         <>
-            <div>Hey, look, we're in season {season} {keeperData.metadata.player_data_pull_date}</div>
             <Box>
                 {teams}
             </Box>
