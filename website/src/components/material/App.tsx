@@ -60,7 +60,7 @@ export default function App() {
                         </Typography>
                     </Toolbar>
                 </AppBar>
-                <Season season={selectedYear} keeperData={keeper_data[selectedYear as keyof typeof keeper_data]} />
+                <Season keeperData={keeper_data[selectedYear as keyof typeof keeper_data]} />
             </Box>
         </>
     );
