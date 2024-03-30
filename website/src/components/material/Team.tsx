@@ -8,13 +8,14 @@ import {
     GridRowsProp,
     GridSlotsComponentsProps
 } from "@mui/x-data-grid";
-import {Popover, Typography} from "@mui/material";
+import {Box, Popover, Typography} from "@mui/material";
 import StatsTable from "./StatsTable";
 import TeamTableFooter from "./TeamTableFooter";
 
 type FooterPointTotal = number;
 
 declare module '@mui/x-data-grid' {
+    /* IntelliJ says this isn't used, that's a lie, it absolutely is. */
   interface FooterPropsOverrides {
     pointTotal: FooterPointTotal
   }
@@ -23,9 +24,9 @@ declare module '@mui/x-data-grid' {
 export default function Team({teamData, metadata, cap}:{teamData: TeamData, metadata: Metadata, cap: Cap}) {
     const columns: GridColDef[] = [
         {field: "name", headerName: "Name"},
-        {field: "position", headerName: "Position", maxWidth: 45},
-        {field: "points", headerName: "Points", maxWidth: 45, type: "number"},
-        {field: "round", headerName: "Round", maxWidth: 45, type: "number"},
+        {field: "position", headerName: "Position"},
+        {field: "points", headerName: "Points", type: "number"},
+        {field: "round", headerName: "Round", type: "number"},
     ];
 
     let rows: GridRowsProp = teamData.players.map((playerData, index)=> {
@@ -71,6 +72,7 @@ export default function Team({teamData, metadata, cap}:{teamData: TeamData, meta
 
     return(
         <>
+            <Box> {/* Box needed to avoid overlap between grid items */}
             <Typography variant="h5" align="center">{teamData.owner.user_name}</Typography>
             <DataGrid columns={columns} rows={rows}
                       checkboxSelection
@@ -100,6 +102,7 @@ export default function Team({teamData, metadata, cap}:{teamData: TeamData, meta
                      }}>
                 {statsTable}
             </Popover>
+            </Box>
         </>
     );
 }

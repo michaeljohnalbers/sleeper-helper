@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import keeper_data from '../../keeper_data.json'
-import {AppBar, Box, IconButton, Menu, MenuItem, Toolbar, Typography} from "@mui/material";
+import {AppBar, IconButton, Menu, MenuItem, Toolbar, Typography} from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
 import Season from "./Season";
 
@@ -29,39 +29,37 @@ export default function App() {
 
     return(
         <>
-            <Box sx={{flexGrow: 1}}>
-                <AppBar position={"static"}>
-                    <Toolbar>
-                        <IconButton
-                            size="large"
-                            edge="start"
-                            color="inherit"
-                            aria-label="menu"
-                            aria-controls="menu-appbar"
-                            aria-haspopup="true"
-                            sx={{ mr: 2 }}
-                            onClick={handleMenu}
-                        >
-                            <MenuIcon />
-                        </IconButton>
-                        <Menu id="menu-appbar"
-                              anchorEl={anchorEl}
-                              keepMounted
-                              open={Boolean(anchorEl)}
-                              onClose={handleClose}>
-                            {yearMenuItems}
-                        </Menu>
-                        {/* TODO: variants need to be smaller for mobile*/}
-                        <Typography variant="h4" component="div" sx={{ flexGrow: 1 }}>
-                            Sleeper Helper
-                        </Typography>
-                        <Typography variant="h6" component="div">
-                            {selectedYear} Season
-                        </Typography>
-                    </Toolbar>
-                </AppBar>
-                <Season keeperData={keeper_data[selectedYear as keyof typeof keeper_data]} />
-            </Box>
+            <AppBar id="sleeper-helper-appbar" position={"static"}>
+                <Toolbar>
+                    <IconButton
+                        size="large"
+                        edge="start"
+                        color="inherit"
+                        aria-label="menu"
+                        aria-controls="menu-appbar"
+                        aria-haspopup="true"
+                        sx={{ mr: 2 }}
+                        onClick={handleMenu}
+                    >
+                        <MenuIcon />
+                    </IconButton>
+                    <Menu id="menu-appbar"
+                          anchorEl={anchorEl}
+                          keepMounted
+                          open={Boolean(anchorEl)}
+                          onClose={handleClose}>
+                        {yearMenuItems}
+                    </Menu>
+                    {/* TODO: variants need to be smaller for mobile*/}
+                    <Typography variant="h4" component="div" sx={{ flexGrow: 1 }}>
+                        Sleeper Helper
+                    </Typography>
+                    <Typography variant="h6" component="div">
+                        {selectedYear} Season
+                    </Typography>
+                </Toolbar>
+            </AppBar>
+            <Season keeperData={keeper_data[selectedYear as keyof typeof keeper_data]} />
         </>
     );
 }
