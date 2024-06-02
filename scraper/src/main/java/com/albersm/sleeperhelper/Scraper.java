@@ -28,7 +28,7 @@ public class Scraper {
     private static final Map<Integer, Cap> CAP = Map.of(
             2022, new Cap(1300),
             2023, new Cap(1200),
-            2024, new Cap(1200)  // Not final
+            2024, new Cap(1200)
     );
 
     private static final String ASGP = "asgp";

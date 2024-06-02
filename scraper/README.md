@@ -15,7 +15,7 @@ a file.
 
 ## Run
 ```bash
-java -jar target/jscraper*-shaded.jar
+java -jar target/scraper*-shaded.jar
 ```
 
 ## Combining data
