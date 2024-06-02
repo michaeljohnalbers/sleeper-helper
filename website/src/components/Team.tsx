@@ -100,12 +100,19 @@ function updateCost(teamState: TeamState) {
         let point_cost_string = playerState.playerData.total_points.toString();
         if (playerState.kept) {
             let multiplier = 1.0;
-            // Since the player list is sorted by draft round cost, look at all the players above the
-            // currently selected player and check for the same original round cost.
-            for (let jj = ii - 1; jj >= 0; --jj) {
-                const player_before = teamState.players[jj];
-                if (player_before.kept && player_before.playerData.draft_round_cost === playerState.playerData.draft_round_cost) {
-                    multiplier += 0.25;
+            // For 2024, we decided to only add the extra tax for the top level players. In this
+            // case round 10 or less. The idea being that players after that ore more of a gamble
+            // or personal preference. So keeping multiple players in the same round isn't as big
+            // of a deal.
+            let draft_round_cost = parseInt(playerState.draft_round_cost_string);
+            if (draft_round_cost <= 10) {
+                // Since the player list is sorted by draft round cost, look at all the players above the
+                // currently selected player and check for the same original round cost.
+                for (let jj = ii - 1; jj >= 0; --jj) {
+                    const player_before = teamState.players[jj];
+                    if (player_before.kept && player_before.playerData.draft_round_cost === playerState.playerData.draft_round_cost) {
+                        multiplier += 0.25;
+                    }
                 }
             }
             playerState.adjusted_points_scored = Math.round(multiplier * playerState.playerData.total_points);
