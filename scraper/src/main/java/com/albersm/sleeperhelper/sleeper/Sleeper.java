@@ -274,7 +274,7 @@ public class Sleeper {
 
 
     private String graphqlRequest(String query, String failureDescription) throws Exception {
-        var uri = URI.create("https://api.sleeper.app/graphql");
+        var uri = URI.create("https://sleeper.com/graphql");
         var request = HttpRequest.newBuilder()
                 .uri(uri)
                 .header("Accept", "application/json")
