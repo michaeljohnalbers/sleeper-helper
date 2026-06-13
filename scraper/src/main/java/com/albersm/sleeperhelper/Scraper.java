@@ -3,6 +3,7 @@ package com.albersm.sleeperhelper;
 import com.albersm.sleeperhelper.model.*;
 import com.albersm.sleeperhelper.sleeper.Sleeper;
 import com.albersm.sleeperhelper.sleeper.model.CalculatedGameStats;
+import com.albersm.sleeperhelper.tools.calculator.ScoringCalculator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -17,7 +18,7 @@ public class Scraper {
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-    public static void main(String[] args) throws Exception {
+    static void main(String[] args) throws Exception {
         new Scraper(args);
     }
 
@@ -54,38 +55,41 @@ public class Scraper {
             System.exit(1);
         }
 
-        var jwt = args[0];
+        var sleeperJwt = args[0];
 
         var now = LocalDateTime.now();
         var year = now.getYear();
 
-        var sleeperData = new Sleeper(jwt, year);
+        var sleeper = new Sleeper(sleeperJwt, year);
 
-        Metadata leagueMetadata = new Metadata(now.toString(), null, "", PLAYER_STATS_KEYS);
+        var calculator = new ScoringCalculator(sleeper);
+        System.out.println("Scoring settings:\n" + calculator.generateJson(OBJECT_MAPPER));
 
-        Season season = new Season(CAP.get(year), leagueMetadata, new LinkedList<>(), sleeperData.getRosterSize());
-
-        int leagueSize = sleeperData.getRosterDetails().size();
-        for (var roster : sleeperData.getRosterDetails()) {
-            Owner owner = new Owner(roster.owner());
-            Team team = new Team(owner, new LinkedList<>());
-            season.teams().add(team);
-
-            for (var playerDetails : roster.players()) {
-                Player player = new Player(playerDetails.active(), 0, false,
-                        playerDetails.name(), playerDetails.position(), playerDetails.team(),
-                        playerDetails.pointsScored(), new HashMap<>());
-
-                calculatePlayerGameStats(playerDetails.gameStats(), player.stats());
-
-                team.players().add(player);
-            }
-        }
-
-        Map<String, Season> seasons = new HashMap<>();
-        seasons.put(Integer.toString(year), season);
-        var json = OBJECT_MAPPER.writeValueAsString(seasons);
-        System.out.println(json);
+//        Metadata leagueMetadata = new Metadata(now.toString(), null, "", PLAYER_STATS_KEYS);
+//
+//        Season season = new Season(CAP.get(year), leagueMetadata, new LinkedList<>(), 0);
+//
+//        int leagueSize = sleeper.getRosterDetails().size();
+//        for (var roster : sleeper.getRosterDetails()) {
+//            Owner owner = new Owner(roster.owner());
+//            Team team = new Team(owner, new LinkedList<>());
+//            season.teams().add(team);
+//
+//            for (var playerDetails : roster.players()) {
+//                Player player = new Player(playerDetails.active(), 0, false,
+//                        playerDetails.name(), playerDetails.position(), playerDetails.team(),
+//                        playerDetails.pointsScored(), new HashMap<>());
+//
+//                calculatePlayerGameStats(playerDetails.gameStats(), player.stats());
+//
+//                team.players().add(player);
+//            }
+//        }
+//
+//        Map<String, Season> seasons = new HashMap<>();
+//        seasons.put(Integer.toString(year), season);
+//        var json = OBJECT_MAPPER.writeValueAsString(seasons);
+//        System.out.println(json);
     }
 
     private void calculatePlayerGameStats(Map<Integer, CalculatedGameStats> playerGameStats, Map<String, Object> stats) {
