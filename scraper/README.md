@@ -1,6 +1,6 @@
 # Scraper
 Tool to pull data from Sleeper and Fantasy Pros to get player data for the fantasy league. The output of this is a
-JSON file which is included in the [website](../website).
+JSON file that is included in the [website](../website).
 
 Specific instructions for what is needed for running will be given by running the scraper with no command line args.
 
@@ -16,6 +16,15 @@ a file.
 ## Run
 ```bash
 java -jar target/scraper*-shaded.jar
+```
+
+## Updating Everything
+```bash
+mvn wrapper:wrapper                         # Update the maven wrapper (use desired version of mvn, first - see SDKMAN)
+./mvnw versions:display-dependency-updates  # Check what dependencies need updating
+./mvnw versions:use-latest-dependencies     # Update the dependencies
+./mvnw versions:display-plugin-updates      # Check what plugins need updating 
+# Updating plugins needs to happen manually
 ```
 
 ## Combining data

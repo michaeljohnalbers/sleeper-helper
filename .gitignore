@@ -18,6 +18,7 @@ Cargo.lock
 
 # Java
 dependency-reduced-pom.xml
+pom.xml.versionsBackup
 
 # Web stuff
 node_modules
