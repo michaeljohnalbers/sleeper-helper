@@ -2,5 +2,5 @@ package com.albersm.sleeperhelper.tools.calculator.model;
 
 import java.util.Map;
 
-public record Player(String name, String position, String team, Map<String, Number> stats) {
+public record Player(String name, String position, String team, Map<String, Float> stats) {
 }

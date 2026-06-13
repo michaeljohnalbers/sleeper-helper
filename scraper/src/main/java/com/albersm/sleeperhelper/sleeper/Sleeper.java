@@ -24,15 +24,14 @@ public class Sleeper {
     private final List<RosterDetails> rosterDetails = new ArrayList<>();
     //private final int rosterSize;
     private final int year;
-    private final String currentLeagueId;
+    private final LeagueIds leagueIds;
 
     public Sleeper(String jwt, int year) throws Exception {
         this.jwt = jwt;
         this.year = year;
 
-        Map<String, PlayerIds> playerIds = getPlayerIds();
-        var leagueIds = getLeagueIds();
-        this.currentLeagueId = leagueIds.leagueId();
+        //Map<String, PlayerIds> playerIds = getPlayerIds();
+        this.leagueIds = getLeagueIds();
 //        var leagueDetails = getLeagueDetail(currentLeagueId);
 //        var allPlayerStats = getPlayerStats();
 //        var leagueScoringSettings = getLeagueSettings(currentLeagueId);
@@ -97,6 +96,10 @@ public class Sleeper {
 //        rosterDetails.sort(Comparator.comparing(RosterDetails::owner));
     }
 
+    public int getYear() {
+        return year;
+    }
+
     public List<RosterDetails> getRosterDetails() {
         return rosterDetails;
     }
@@ -145,7 +148,7 @@ public class Sleeper {
         return firstName + " " + lastName;
     }
 
-    private record LeagueIds(String leagueId, String previousLeagueId){}
+    private record LeagueIds(String currentLeagueId, String previousLeagueId){}
 
     /**
      * This API call can be seen when loading the app (just https://sleeper.com) the first time, or after a refresh.
@@ -175,7 +178,7 @@ public class Sleeper {
     /**
      * This API call can be seen when loading the initial league page at sleeper.com.
      */
-    private SleeperLeagueDetails getLeagueDetail(String leagueId) throws Exception {
+    private SleeperLeagueDetails getLeagueDetails(String leagueId) throws Exception {
         String prefix = """
 {
   "operationName": "get_league_detail",
@@ -195,6 +198,14 @@ public class Sleeper {
         return OBJECT_MAPPER.readValue(json, SleeperLeagueDetails.class);
     }
 
+    public SleeperLeagueDetails getCurrentLeagueDetails() throws Exception {
+        return getLeagueDetails(leagueIds.currentLeagueId());
+    }
+
+    public SleeperLeagueDetails getPreviousLeagueDetails() throws Exception {
+        return getLeagueDetails(leagueIds.previousLeagueId());
+    }
+
     /**
      * This API call can be seen when loading the initial league page at sleeper.com.
      */
@@ -209,7 +220,7 @@ public class Sleeper {
 \\"){ data }}"
 }""";
 
-        String query = prefix + currentLeagueId + end;
+        String query = prefix + leagueIds.currentLeagueId() + end;
         var json = graphqlRequest(query, "Failed to retrieve league metadata.");
 
         String yearStr = Integer.toString(year);
@@ -230,14 +241,14 @@ public class Sleeper {
         return scoringSettings;
     }
 
-    private Map<Integer, GameStats> getPlayerGameStats(String playerId, int previousYear) throws IOException,
+    public Map<Integer, GameStats> getPlayerGameStats(String playerId, int year) throws IOException,
             InterruptedException {
 
         var uri = URI.create("https://api.sleeper.com/stats/nfl/player/" + playerId + "?season_type=regular&season="
-                + previousYear + "&grouping=week");
+                + year + "&grouping=week");
         String cacheFile = "gameStats" + playerId + ".json";
         String description = "Failed to retrieve player game stats for player Id '" + playerId
-                + "' for season " + previousYear + ".";
+                + "' for season " + year + ".";
         var jacksonType = new TypeReference<Map<Integer, GameStats>>(){};
         var r = new ThrottlingCacheableRequest<>(client, uri, cacheFile, description, jacksonType, Period.ofDays(30));
         return r.getResponse();
