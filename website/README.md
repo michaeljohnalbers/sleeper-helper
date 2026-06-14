@@ -39,6 +39,9 @@ This will start the Webpack [DevServer](https://webpack.js.org/configuration/dev
 on the localhost loop back as well as the public IP on the network. This server supports hot reloading: any changes
 made in the source will automatically be reloaded.
 
+### Updating Scraped Data
+Copy the appropriate **.json** files from the scraper directory into the **src/data** directory.
+
 ## Production
 
 ### Building

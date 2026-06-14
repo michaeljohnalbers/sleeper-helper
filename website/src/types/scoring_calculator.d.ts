@@ -15,7 +15,7 @@ export interface Player {
  */
 export interface Main {
   /** Key: Sleeper statistic name, i.e., rush_yd */
-  leagueScoringSettings: Record<string, number>;
+  league_scoring_settings: Record<string, number>;
   /** Key: Sleeper player ID */
   players: Record<string, Player>;
 }

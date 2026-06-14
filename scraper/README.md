@@ -17,6 +17,8 @@ a file.
 ```bash
 java -jar target/scraper*-shaded.jar
 ```
+This will output a few different files. See the website's README for what to do with them.
+
 
 ## Updating Everything
 ```bash
@@ -26,14 +28,3 @@ mvn wrapper:wrapper                         # Update the maven wrapper (use desi
 ./mvnw versions:display-plugin-updates      # Check what plugins need updating 
 # Updating plugins needs to happen manually
 ```
-
-## Combining data
-```shell
-cd scraper
-java -jar target/jscraper*-shaded.jar > keeper_data_updated.json
-cd ..
-jq -c -s '.[0] * .[1]' website/src/keeper_data.json scraper/keeper_data_updated.json > keeper_data.json
-mv keeper_data.json website/src/keeper_data.json
-rm scraper/keeper_data_updated.json
-```
-See https://stackoverflow.com/questions/19529688/how-to-merge-2-json-objects-from-2-files-using-jq for jq command.
