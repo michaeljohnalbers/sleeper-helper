@@ -1,387 +1,595 @@
-import React from "react";
-import scoringCalculatorRawData from "../data/scoring-calculator.json";
-import { Main } from "../types/scoring_calculator";
+import React, { useState, useCallback } from "react";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Alert,
+  AlertTitle,
+  Box,
+  Button,
+  Chip,
+  Divider,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 
-const scoringCalculatorData: Main = scoringCalculatorRawData;
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import UndoIcon from "@mui/icons-material/Undo";
+import TuneIcon from "@mui/icons-material/Tune";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import {
+  getScoringCategories,
+  getScoringSettings,
+} from "../utils/scoring_helper";
 
-// Matches the headings in Sleepers "Scoring Settings" dialog.
-enum ScoringCategories {
-  Bonus = "Bonus",
-  Kicking = "Kicking",
-  Misc = "Misc",
-  Passing = "Passing",
-  Receiving = "Receiving",
-  Rushing = "Rushing",
-  SpecialTeamsDefense = "Special Teams Defense",
-  SpecialTeamsPlayer = "Special Teams Player",
-  TeamDefense = "Team Defense",
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+// function calcPts(stats, scoring) {
+//   return Object.keys(scoring).reduce(
+//     (sum, key) => sum + (stats[key] ?? 0) * scoring[key],
+//     0,
+//   );
+// }
+
+function fmtVal(v: number) {
+  const n = v; //parseFloat(v);
+  return n % 1 === 0 ? String(n) : n.toFixed(2).replace(/\.?0+$/, "");
 }
 
-class ScoringStatData {
-  category: ScoringCategories;
-  humanReadableName: string;
+// ─── Sub-components ─────────────────────────────────────────────────────────
 
-  constructor(category: ScoringCategories, humanReadableName: string) {
-    this.category = category;
-    this.humanReadableName = humanReadableName;
-  }
+function DeltaChip({ delta }: { delta: number }) {
+  if (Math.abs(delta) < 0.05)
+    return (
+      <Typography variant="body2" color="text.disabled">
+        —
+      </Typography>
+    );
+  const positive = delta > 0;
+  return (
+    <Chip
+      label={`${positive ? "+" : ""}${delta.toFixed(1)}`}
+      size="small"
+      color={positive ? "success" : "error"}
+      variant="outlined"
+      sx={{ fontWeight: 600, minWidth: 60 }}
+    />
+  );
 }
 
-const scoringStatData = new Map<string, ScoringStatData>();
-convertScoringStats();
+function PosChip({ pos }: { pos: string }) {
+  const colorMap = {
+    QB: "primary",
+    RB: "success",
+    WR: "secondary",
+    TE: "warning",
+  };
+  // @ts-ignore
+  return (
+    <Chip
+      label={pos}
+      size="small"
+      //color={colorMap[pos] ?? "default"}
+      color={"default"} // TODO: here
+      variant="outlined"
+      sx={{ fontWeight: 600, minWidth: 40 }}
+    />
+  );
+}
+
+const SCORING_CATEGORIES = getScoringCategories();
+const DEFAULT_SCORING_SETTINGS = getScoringSettings();
+
+// ─── Main component ──────────────────────────────────────────────────────────
 
 export default function ScoringCalculator() {
-  return <>Hi there, scoring calculator here!</>;
+  const [scoring, setScoring] = useState<Map<string, number>>(
+    DEFAULT_SCORING_SETTINGS,
+  );
+  const [changedStats, setChangedStats] = useState<Set<string>>(
+    new Set<string>(),
+  );
+
+  const [activePosSet, setActivePosSet] = useState<string[]>([
+    "QB",
+    "RB",
+    "WR",
+    "TE",
+  ]);
+  const [sortCol, setSortCol] = useState("after");
+
+  const handleInput = useCallback((stat: string, value: string) => {
+    let valueAsNumber: number = parseFloat(value) || 0;
+
+    setScoring((prev) => {
+      const newState = new Map<string, number>(prev);
+      newState.set(stat, valueAsNumber);
+      return newState;
+    });
+
+    setChangedStats((prev) => {
+      const newState = new Set<string>(prev);
+      if (Math.abs(valueAsNumber - scoring.get(stat)) > 0.0001) {
+        newState.add(stat);
+      } else {
+        // For if the value is changed back to the default.
+        newState.delete(stat);
+      }
+      return newState;
+    });
+  }, []);
+
+  const handleRevert = useCallback((stat: string) => {
+    setScoring((prev) => {
+      const newState = new Map<string, number>(prev);
+      newState.set(stat, DEFAULT_SCORING_SETTINGS.get(stat));
+      return newState;
+    });
+    setChangedStats((prev) => {
+      const newState = new Set<string>(prev);
+      newState.delete(stat);
+      return newState;
+    });
+  }, []);
+
+  const handleResetAll = () => {
+    setScoring(DEFAULT_SCORING_SETTINGS);
+    setChangedStats(new Set<string>());
+  };
+
+  const handlePosToggle = (_: any, newVal: string[]) => {
+    if (newVal.length === 0) return;
+    setActivePosSet(newVal);
+  };
+
+  // Changes summary grouped by section
+  const changeSummary = SCORING_CATEGORIES.flatMap((category) =>
+    category.scoringStatData
+      .filter((s) => changedStats.has(s.statKey))
+      .map((s) => ({
+        label: s.label,
+        from: DEFAULT_SCORING_SETTINGS.get(s.statKey),
+        to: scoring.get(s.statKey),
+      })),
+  );
+
+  return (
+    <>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "340px 1fr",
+          height: "100vh",
+          overflow: "hidden",
+        }}
+      >
+        {/* ── Left panel ── */}
+        <Paper
+          square
+          elevation={2}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+            zIndex: 1,
+          }}
+        >
+          {/* Header */}
+          <Box
+            sx={{
+              px: 2,
+              py: 1.5,
+              borderBottom: 1,
+              borderColor: "divider",
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <TuneIcon fontSize="small" color="action" />
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, flex: 1 }}>
+              Scoring settings
+            </Typography>
+            {changedStats.size > 0 && (
+              <Chip
+                label={`${changedStats.size} changed`}
+                size="small"
+                color="warning"
+              />
+            )}
+          </Box>
+
+          {/* Scrollable settings */}
+          <Box sx={{ flex: 1, overflowY: "auto" }}>
+            {SCORING_CATEGORIES.map((category) => {
+              const sectionChanged = category.scoringStatData.filter((s) =>
+                changedStats.has(s.statKey),
+              ).length;
+              return (
+                <Accordion
+                  key={category.category}
+                  defaultExpanded
+                  disableGutters
+                  elevation={0}
+                  sx={{
+                    "&:before": { display: "none" },
+                    borderBottom: 1,
+                    borderColor: "divider",
+                  }}
+                >
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        flex: 1,
+                        mr: 1,
+                      }}
+                    >
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {category.category}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {category.scoringStatData.length} settings
+                      </Typography>
+                      {sectionChanged > 0 && (
+                        <Chip
+                          label={`${sectionChanged} changed`}
+                          size="small"
+                          color="warning"
+                          variant="outlined"
+                          sx={{ height: 18, fontSize: 10, ml: "auto" }}
+                        />
+                      )}
+                    </Box>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ px: 1.5, pt: 0, pb: 1 }}>
+                    {category.scoringStatData.map((s) => {
+                      const isChanged = changedStats.has(s.statKey);
+                      return (
+                        <Box
+                          key={s.statKey}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            px: 1,
+                            py: 0.75,
+                            borderRadius: 1,
+                            bgcolor: isChanged ? "warning.50" : "transparent",
+                            border: "1px solid",
+                            borderColor: isChanged
+                              ? "warning.300"
+                              : "transparent",
+                            mb: 0.5,
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{ flex: 1 }}
+                            color={
+                              isChanged ? "warning.dark" : "text.secondary"
+                            }
+                          >
+                            {s.label}
+                          </Typography>
+                          {isChanged && (
+                            <Typography
+                              variant="caption"
+                              color="warning.main"
+                              sx={{
+                                textDecoration: "line-through",
+                                minWidth: 28,
+                                textAlign: "right",
+                              }}
+                            >
+                              {fmtVal(DEFAULT_SCORING_SETTINGS.get(s.statKey))}
+                            </Typography>
+                          )}
+                          <TextField
+                            size="small"
+                            type="number"
+                            value={scoring.get(s.statKey)}
+                            onChange={(e) =>
+                              handleInput(s.statKey, e.target.value)
+                            }
+                            slotProps={{
+                              htmlInput: {
+                                step: s.step,
+                                fontWeight: isChanged ? 600 : 400,
+                              },
+                            }}
+                            sx={{
+                              width: 82,
+                              "& .MuiOutlinedInput-root": isChanged
+                                ? {
+                                    "& fieldset": {
+                                      borderColor: "warning.main",
+                                    },
+                                  }
+                                : {},
+                            }}
+                          />
+                          <Tooltip title="Revert to baseline">
+                            <span>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleRevert(s.statKey)}
+                                disabled={!isChanged}
+                                color={isChanged ? "warning" : "default"}
+                                sx={{ opacity: isChanged ? 1 : 0 }}
+                              >
+                                <UndoIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Box>
+                      );
+                    })}
+                  </AccordionDetails>
+                </Accordion>
+              );
+            })}
+          </Box>
+
+          {/* Changes summary */}
+          {changeSummary.length > 0 && (
+            <Box
+              sx={{
+                borderTop: 1,
+                borderColor: "divider",
+                px: 2,
+                py: 1.5,
+                bgcolor: "action.hover",
+              }}
+            >
+              <Alert severity="warning" variant="outlined" sx={{ py: 0.5 }}>
+                <AlertTitle sx={{ fontSize: 12, mb: 0.5 }}>
+                  {changeSummary.length} change
+                  {changeSummary.length !== 1 ? "s" : ""} from baseline
+                </AlertTitle>
+                {changeSummary.map((c) => (
+                  <Box
+                    key={c.label}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.5,
+                      mb: 0.25,
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ flex: 1 }}
+                    >
+                      {c.label}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        textDecoration: "line-through",
+                        color: "text.disabled",
+                      }}
+                    >
+                      {fmtVal(c.from)}
+                    </Typography>
+                    <ArrowForwardIcon
+                      sx={{ fontSize: 11, color: "text.disabled" }}
+                    />
+                    <Typography
+                      variant="caption"
+                      color="warning.dark"
+                      sx={{ fontWeight: 600 }}
+                    >
+                      {fmtVal(c.to)}
+                    </Typography>
+                  </Box>
+                ))}
+              </Alert>
+            </Box>
+          )}
+
+          {/* Footer */}
+          <Box
+            sx={{
+              px: 2,
+              py: 1.25,
+              borderTop: 1,
+              borderColor: "divider",
+              display: "flex",
+              gap: 1,
+            }}
+          >
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={handleResetAll}
+              disabled={changedStats.size === 0}
+            >
+              Reset all
+            </Button>
+          </Box>
+        </Paper>
+
+        {/* ── Right panel ── */}
+        <Box
+          sx={{ display: "flex", flexDirection: "column", overflow: "hidden" }}
+        >
+          {/* Header */}
+          <Paper
+            square
+            elevation={1}
+            sx={{
+              px: 2.5,
+              py: 1.5,
+              borderBottom: 1,
+              borderColor: "divider",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <EmojiEventsIcon fontSize="small" color="action" />
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                Player leaderboard
+              </Typography>
+            </Box>
+            <Stack direction="row" spacing={1.5}>
+              <ToggleButtonGroup
+                value={activePosSet}
+                onChange={handlePosToggle}
+                size="small"
+                aria-label="position filter"
+              >
+                {["QB", "RB", "WR", "TE"].map((pos) => (
+                  <ToggleButton
+                    key={pos}
+                    value={pos}
+                    sx={{ px: 1.5, fontWeight: 600, fontSize: 11 }}
+                  >
+                    {pos}
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+              <Divider orientation="vertical" flexItem />
+              <FormControl size="small" sx={{ minWidth: 160 }}>
+                <InputLabel>Sort by</InputLabel>
+                <Select
+                  value={sortCol}
+                  label="Sort by"
+                  onChange={(e) => setSortCol(e.target.value)}
+                >
+                  <MenuItem value="after">New points</MenuItem>
+                  <MenuItem value="before">Original points</MenuItem>
+                  <MenuItem value="delta">Biggest change</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
+          </Paper>
+
+          {/* Table */}
+          <TableContainer sx={{ flex: 1, overflow: "auto" }}>
+            <Table stickyHeader size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ width: 36 }}>#</TableCell>
+                  <TableCell>Player</TableCell>
+                  <TableCell sx={{ width: 60 }}>Pos</TableCell>
+                  <TableCell align="right" sx={{ width: 90 }}>
+                    Original
+                  </TableCell>
+                  <TableCell sx={{ width: 24 }} />
+                  <TableCell align="right" sx={{ width: 80 }}>
+                    New pts
+                  </TableCell>
+                  <TableCell align="right" sx={{ width: 90 }}>
+                    Change
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              {/* TODO: uncomment
+              <TableBody>
+                {rows.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={7}
+                      align="center"
+                      sx={{ py: 6, color: "text.disabled" }}
+                    >
+                      No positions selected
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  rows.map((p, i) => (
+                    <TableRow key={p.name} hover>
+                      <TableCell sx={{ color: "text.disabled", fontSize: 12 }}>
+                        {i + 1}
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{fontWeight: 600}}>{p.name}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {p.team}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <PosChip pos={p.pos} />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          //fontFamily="monospace" // TODO: here
+                        >
+                          {p.before.toFixed(1)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <ArrowForwardIcon
+                          sx={{ fontSize: 14, color: "text.disabled" }}
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography
+                          variant="body2"
+                          sx = {{
+                            fontWeight: 600
+                            fontFamily: "monospace"
+                          }}
+                        >
+                          {p.after.toFixed(1)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <DeltaChip delta={p.delta} />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+              */}
+            </Table>
+          </TableContainer>
+        </Box>
+      </Box>
+    </>
+  );
 }
 
-/**
- * There isn't a good algorithmic way that I can see to convert the stats
- * (i.e., "sack", "fgm_40_49", "pass_int", etc.) to a category and friendly name.
- */
-function convertScoringStats() {
-  /********************************************************
-   * Bonus
-   ********************************************************/
-  scoringStatData.set(
-    "bonus_rec_yd_100",
-    new ScoringStatData(ScoringCategories.Bonus, "100-199 Yard Receiving Game"),
-  );
-  scoringStatData.set(
-    "bonus_rush_yd_100",
-    new ScoringStatData(ScoringCategories.Bonus, "100-199 Yard Rushing Game"),
-  );
-  scoringStatData.set(
-    "bonus_pass_yd_400",
-    new ScoringStatData(ScoringCategories.Bonus, "400+ Yard Passing Game"),
-  );
-  scoringStatData.set(
-    "bonus_pass_yd_300",
-    new ScoringStatData(ScoringCategories.Bonus, "300-399 Yard Passing Game"),
-  );
-  scoringStatData.set(
-    "bonus_rec_yd_200",
-    new ScoringStatData(ScoringCategories.Bonus, "200+ Yard Receiving Game"),
-  );
-  scoringStatData.set(
-    "bonus_rush_yd_200",
-    new ScoringStatData(ScoringCategories.Bonus, "200+ Yard Rushing Game"),
-  );
-
-  /********************************************************
-   * Kicking
-   ********************************************************/
-  scoringStatData.set(
-    "fgm_40_49",
-    new ScoringStatData(ScoringCategories.Kicking, "FG Made (40-49 yards"),
-  );
-  scoringStatData.set(
-    "fgm_30_39",
-    new ScoringStatData(ScoringCategories.Kicking, "FG Made (30-39 yards)"),
-  );
-  scoringStatData.set(
-    "xpmiss",
-    new ScoringStatData(ScoringCategories.Kicking, "PAT Missed"),
-  );
-  scoringStatData.set(
-    "fgmiss",
-    new ScoringStatData(ScoringCategories.Kicking, "FG Missed"),
-  );
-  scoringStatData.set(
-    "fgm_0_19",
-    new ScoringStatData(ScoringCategories.Kicking, "FG Made (0-19 yards)"),
-  );
-  scoringStatData.set(
-    "fgm_20_29",
-    new ScoringStatData(ScoringCategories.Kicking, "FG Made (20-29 yards)"),
-  );
-  scoringStatData.set(
-    "xpm",
-    new ScoringStatData(ScoringCategories.Kicking, "PAT Made"),
-  );
-  scoringStatData.set(
-    "fgm_50p",
-    new ScoringStatData(ScoringCategories.Kicking, "FG Made (50+ yards)"),
-  );
-
-  /********************************************************
-   * Misc
-   ********************************************************/
-  scoringStatData.set(
-    "fum",
-    new ScoringStatData(ScoringCategories.Misc, "Fumble"),
-  );
-  scoringStatData.set(
-    "fum_rec_td",
-    new ScoringStatData(ScoringCategories.Misc, "Fumble Recovery TD"),
-  );
-  scoringStatData.set(
-    "fum_lost",
-    new ScoringStatData(ScoringCategories.Misc, "Fumble Lost"),
-  );
-
-  /********************************************************
-   * Passing
-   ********************************************************/
-  scoringStatData.set(
-    "pass_int",
-    new ScoringStatData(ScoringCategories.Passing, "Pass Intercepted"),
-  );
-  scoringStatData.set(
-    "pass_2pt",
-    new ScoringStatData(ScoringCategories.Passing, "2-Pt Conversion"),
-  );
-  scoringStatData.set(
-    "pass_int_td",
-    new ScoringStatData(ScoringCategories.Passing, "Pick 6 Thrown"),
-  );
-  scoringStatData.set(
-    "int",
-    new ScoringStatData(ScoringCategories.Passing, "Pass Intercepted"),
-  );
-  // TODO: value is 1 pt / X yards
-  scoringStatData.set(
-    "pass_yd",
-    new ScoringStatData(ScoringCategories.Passing, "Passing Yards"),
-  );
-  scoringStatData.set(
-    "pass_td",
-    new ScoringStatData(ScoringCategories.Passing, "Passing TD"),
-  );
-
-  /********************************************************
-   * Receiving
-   ********************************************************/
-  scoringStatData.set(
-    "bonus_rec_te",
-    new ScoringStatData(ScoringCategories.Receiving, "Reception Bonus - TE"),
-  );
-  scoringStatData.set(
-    "rec_td",
-    new ScoringStatData(ScoringCategories.Receiving, "Receiving TD"),
-  );
-  scoringStatData.set(
-    "rec_2pt",
-    new ScoringStatData(ScoringCategories.Receiving, "2-Pt Conversion"),
-  );
-  scoringStatData.set(
-    "rec",
-    new ScoringStatData(ScoringCategories.Receiving, "Reception"),
-  );
-  scoringStatData.set(
-    "rec_fd",
-    new ScoringStatData(ScoringCategories.Receiving, "Receiving 1st Down"),
-  );
-  // TODO: value is 1 pt / X yards
-  scoringStatData.set(
-    "rec_yd",
-    new ScoringStatData(ScoringCategories.Receiving, "Receiving Yards"),
-  );
-
-  /********************************************************
-   * Rushing
-   ********************************************************/
-  scoringStatData.set(
-    "rush_td",
-    new ScoringStatData(ScoringCategories.Rushing, "Rushing TD"),
-  );
-  scoringStatData.set(
-    "rush_fd",
-    new ScoringStatData(ScoringCategories.Rushing, "Rushing 1st Down"),
-  );
-  scoringStatData.set(
-    "rush_2pt",
-    new ScoringStatData(ScoringCategories.Rushing, "2-Pt Conversion"),
-  );
-  // TODO: value is 1 pt / X yards
-  scoringStatData.set(
-    "rush_yd",
-    new ScoringStatData(ScoringCategories.Rushing, "Rushing Yards"),
-  );
-
-  /********************************************************
-   * Special Teams Defense
-   ********************************************************/
-  scoringStatData.set(
-    "def_st_fum_rec",
-    new ScoringStatData(
-      ScoringCategories.SpecialTeamsDefense,
-      "Special Teams Fumble Recovery",
-    ),
-  );
-  scoringStatData.set(
-    "def_st_ff",
-    new ScoringStatData(
-      ScoringCategories.SpecialTeamsDefense,
-      "Special Teams Forced Fumble",
-    ),
-  );
-  scoringStatData.set(
-    "def_st_td",
-    new ScoringStatData(
-      ScoringCategories.SpecialTeamsDefense,
-      "Special teams td",
-    ),
-  );
-
-  /********************************************************
-   * Special Teams Player
-   ********************************************************/
-  scoringStatData.set(
-    "st_td",
-    new ScoringStatData(
-      ScoringCategories.SpecialTeamsPlayer,
-      "Special teams player td",
-    ),
-  );
-  scoringStatData.set(
-    "st_fum_rec",
-    new ScoringStatData(
-      ScoringCategories.SpecialTeamsPlayer,
-      "Special Teams Player Fumble Recovery",
-    ),
-  );
-  scoringStatData.set(
-    "st_ff",
-    new ScoringStatData(
-      ScoringCategories.SpecialTeamsPlayer,
-      "Special Teams Player Forced Fumble",
-    ),
-  );
-  // TODO: value is 1 pt / X yards
-  scoringStatData.set(
-    "pr_yd",
-    new ScoringStatData(
-      ScoringCategories.SpecialTeamsPlayer,
-      "Player Punt Return Yards",
-    ),
-  );
-  // TODO: value is 1 pt / X yards
-  scoringStatData.set(
-    "kr_yd",
-    new ScoringStatData(
-      ScoringCategories.SpecialTeamsPlayer,
-      "Player Kick Return Yards",
-    ),
-  );
-
-  /********************************************************
-   * Team Defense
-   ********************************************************/
-  scoringStatData.set(
-    "sack",
-    new ScoringStatData(ScoringCategories.TeamDefense, "Sacks"),
-  );
-  scoringStatData.set(
-    "def_forced_punts",
-    new ScoringStatData(ScoringCategories.TeamDefense, "Forced Pun"),
-  );
-  scoringStatData.set(
-    "pts_allow_0",
-    new ScoringStatData(ScoringCategories.TeamDefense, "Points Allowed 0"),
-  );
-  scoringStatData.set(
-    "yds_allow_450_499",
-    new ScoringStatData(
-      ScoringCategories.TeamDefense,
-      "350-499 Total Yards Allowed",
-    ),
-  );
-  scoringStatData.set(
-    "yds_allow_400_449",
-    new ScoringStatData(
-      ScoringCategories.TeamDefense,
-      "400-449 Total Yards Allowed",
-    ),
-  );
-  scoringStatData.set(
-    "def_4_and_stop",
-    new ScoringStatData(ScoringCategories.TeamDefense, "4th Down Stop"),
-  );
-  scoringStatData.set(
-    "yds_allow_550p",
-    new ScoringStatData(
-      ScoringCategories.TeamDefense,
-      "550+ Total Yards Allowed",
-    ),
-  );
-  scoringStatData.set(
-    "yds_allow_350_399",
-    new ScoringStatData(
-      ScoringCategories.TeamDefense,
-      "350-399 Total Yards Allowed",
-    ),
-  );
-  scoringStatData.set(
-    "ff",
-    new ScoringStatData(ScoringCategories.TeamDefense, "Forced Fumble"),
-  );
-  scoringStatData.set(
-    "pts_allow_14_20",
-    new ScoringStatData(ScoringCategories.TeamDefense, "Points Allowed 14-20"),
-  );
-  scoringStatData.set(
-    "def_2pt",
-    new ScoringStatData(
-      ScoringCategories.TeamDefense,
-      "2-Pt Conversion Returns",
-    ),
-  );
-  scoringStatData.set(
-    "pts_allow_28_34",
-    new ScoringStatData(
-      ScoringCategories.TeamDefense,
-      "Points Allowed (28-34)",
-    ),
-  );
-  scoringStatData.set(
-    "pts_allow_35p",
-    new ScoringStatData(ScoringCategories.TeamDefense, "Points Allowed (35+)"),
-  );
-  scoringStatData.set(
-    "pts_allow_7_13",
-    new ScoringStatData(ScoringCategories.TeamDefense, "Points Allowed (7-13)"),
-  );
-  scoringStatData.set(
-    "pts_allow_1_6",
-    new ScoringStatData(ScoringCategories.TeamDefense, "Points Allowed 1-6"),
-  );
-  scoringStatData.set(
-    "yds_allow_500_549",
-    new ScoringStatData(
-      ScoringCategories.TeamDefense,
-      "500-549 Total Yards Allowed",
-    ),
-  );
-  scoringStatData.set(
-    "pts_allow_21_27",
-    new ScoringStatData(ScoringCategories.TeamDefense, "Points Allowed 21-27"),
-  );
-  scoringStatData.set(
-    "def_3_and_out",
-    new ScoringStatData(ScoringCategories.TeamDefense, "3 and Out"),
-  );
-  scoringStatData.set(
-    "tkl_loss",
-    new ScoringStatData(ScoringCategories.TeamDefense, "Tackle For Loss"),
-  );
-  scoringStatData.set(
-    "def_td",
-    new ScoringStatData(ScoringCategories.TeamDefense, "Defense TD"),
-  );
-  scoringStatData.set(
-    "safe",
-    new ScoringStatData(ScoringCategories.TeamDefense, "Safety"),
-  );
-  scoringStatData.set(
-    "blk_kick",
-    new ScoringStatData(ScoringCategories.TeamDefense, "Blocked Kick"),
-  );
-  scoringStatData.set(
-    "def_pass_def",
-    new ScoringStatData(ScoringCategories.TeamDefense, "Pass Defended"),
-  );
-  scoringStatData.set(
-    "fum_rec",
-    new ScoringStatData(ScoringCategories.TeamDefense, "Fumble Recovery"),
-  );
+function calculatePlayerPoints(playerStats: Record<string, number>): number {
+  let points = 0;
+  (Object.entries(playerStats) as [string, number][]).forEach(
+    ([stat, statValue]) => {
+      let scoringSetting = 0.0; // scoringSettings.get(stat);
+      if (scoringSetting === undefined) {
+        alert(
+          "Scoring stat not found in settings: " +
+            stat +
+            ". Tell Michael he missed something...or Sleeper broke it.",
+        );
+      } else {
+        points += statValue * scoringSetting; // TODO: need to adjust this to match what Sleeper does, see old code
+      }
+    },
+  );
+  return points;
 }
