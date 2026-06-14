@@ -1,15 +1,34 @@
-import { Main } from "../types/scoring_calculator";
+import { Main, Player } from "../types/scoring_calculator";
 import scoringCalculatorRawData from "../data/scoring-calculator.json";
 
 const scoringCalculatorData: Main = scoringCalculatorRawData;
 const leagueScoringSettings = scoringCalculatorData.league_scoring_settings;
+const rawPlayers = scoringCalculatorData.players;
 
 export {
   ScoringStatData,
   ScoringCategories,
+  calculatePlayerPoints,
+  getPlayers,
   getScoringCategories,
   getScoringSettings,
 };
+
+function calculatePlayerPoints(
+  playerStats: Record<string, number>,
+  scoringSettings: Map<string, number>,
+): number {
+  let points = 0;
+  (Object.entries(playerStats) as [string, number][]).forEach(
+    ([stat, statValue]) => {
+      let scoringSetting = scoringSettings.get(stat);
+      if (scoringSetting !== undefined) {
+        points += statValue * scoringSetting;
+      }
+    },
+  );
+  return Math.round(points);
+}
 
 function getScoringCategories(): ScoringCategory[] {
   return scoringCategories;
@@ -17,6 +36,10 @@ function getScoringCategories(): ScoringCategory[] {
 
 function getScoringSettings(): Map<string, number> {
   return new Map<string, number>(Object.entries(leagueScoringSettings));
+}
+
+function getPlayers(): Map<string, Player> {
+  return new Map<string, Player>(Object.entries(rawPlayers));
 }
 
 // Matches the headings in Sleepers "Scoring Settings" dialog.

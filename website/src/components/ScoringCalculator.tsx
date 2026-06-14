@@ -35,21 +35,20 @@ import TuneIcon from "@mui/icons-material/Tune";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import {
+  calculatePlayerPoints,
+  getPlayers,
   getScoringCategories,
   getScoringSettings,
-} from "../utils/scoring_helper";
+} from "../utils/scoring_calculator_helper";
+import { Player } from "../types/scoring_calculator";
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ─── Sleeper Data ────────────────────────────────────────────────────────────
 
-// function calcPts(stats, scoring) {
-//   return Object.keys(scoring).reduce(
-//     (sum, key) => sum + (stats[key] ?? 0) * scoring[key],
-//     0,
-//   );
-// }
+const SCORING_CATEGORIES = getScoringCategories();
+const DEFAULT_SCORING_SETTINGS = getScoringSettings();
+const PLAYERS: Map<string, Player> = getPlayers();
 
-function fmtVal(v: number) {
-  const n = v; //parseFloat(v);
+function fmtVal(n: number) {
   return n % 1 === 0 ? String(n) : n.toFixed(2).replace(/\.?0+$/, "");
 }
 
@@ -75,27 +74,22 @@ function DeltaChip({ delta }: { delta: number }) {
 }
 
 function PosChip({ pos }: { pos: string }) {
-  const colorMap = {
-    QB: "primary",
-    RB: "success",
-    WR: "secondary",
-    TE: "warning",
-  };
-  // @ts-ignore
+  const colorMap = new Map<string, any>([
+    ["QB", "primary"],
+    ["RB", "success"],
+    ["WR", "secondary"],
+    ["TE", "warning"],
+  ]);
   return (
     <Chip
       label={pos}
       size="small"
-      //color={colorMap[pos] ?? "default"}
-      color={"default"} // TODO: here
+      color={colorMap.get(pos) ?? "default"}
       variant="outlined"
       sx={{ fontWeight: 600, minWidth: 40 }}
     />
   );
 }
-
-const SCORING_CATEGORIES = getScoringCategories();
-const DEFAULT_SCORING_SETTINGS = getScoringSettings();
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
@@ -107,12 +101,10 @@ export default function ScoringCalculator() {
     new Set<string>(),
   );
 
-  const [activePosSet, setActivePosSet] = useState<string[]>([
-    "QB",
-    "RB",
-    "WR",
-    "TE",
-  ]);
+  const supportedPositions = ["QB", "RB", "WR", "TE", "K", "DEF"];
+
+  const [activePosSet, setActivePosSet] =
+    useState<string[]>(supportedPositions);
   const [sortCol, setSortCol] = useState("after");
 
   const handleInput = useCallback((stat: string, value: string) => {
@@ -155,7 +147,6 @@ export default function ScoringCalculator() {
   };
 
   const handlePosToggle = (_: any, newVal: string[]) => {
-    if (newVal.length === 0) return;
     setActivePosSet(newVal);
   };
 
@@ -170,6 +161,30 @@ export default function ScoringCalculator() {
       })),
   );
 
+  // Build leaderboard rows
+  const playerRows = [...PLAYERS.values()]
+    .filter((p) => activePosSet.includes(p.position))
+    .map((p) => {
+      const beforePoints = calculatePlayerPoints(
+        p.stats,
+        DEFAULT_SCORING_SETTINGS,
+      );
+      const afterPoints = calculatePlayerPoints(p.stats, scoring);
+      return {
+        ...p,
+        before: beforePoints,
+        after: afterPoints,
+        delta: afterPoints - beforePoints,
+      };
+    })
+    .sort((a, b) =>
+      sortCol === "after"
+        ? b.after - a.after
+        : sortCol === "before"
+          ? b.before - a.before
+          : b.delta - a.delta,
+    );
+
   return (
     <>
       <Box
@@ -177,7 +192,8 @@ export default function ScoringCalculator() {
           display: "grid",
           gridTemplateColumns: "340px 1fr",
           height: "100vh",
-          overflow: "hidden",
+          /* hack for mobile, otherwise this won't show up (via Claude) */
+          minWidth: 800,
         }}
       >
         {/* ── Left panel ── */}
@@ -225,7 +241,6 @@ export default function ScoringCalculator() {
               return (
                 <Accordion
                   key={category.category}
-                  defaultExpanded
                   disableGutters
                   elevation={0}
                   sx={{
@@ -461,7 +476,7 @@ export default function ScoringCalculator() {
                 size="small"
                 aria-label="position filter"
               >
-                {["QB", "RB", "WR", "TE"].map((pos) => (
+                {supportedPositions.map((pos) => (
                   <ToggleButton
                     key={pos}
                     value={pos}
@@ -487,7 +502,7 @@ export default function ScoringCalculator() {
             </Stack>
           </Paper>
 
-          {/* Table */}
+          {/* Player Table */}
           <TableContainer sx={{ flex: 1, overflow: "auto" }}>
             <Table stickyHeader size="small">
               <TableHead>
@@ -507,9 +522,8 @@ export default function ScoringCalculator() {
                   </TableCell>
                 </TableRow>
               </TableHead>
-              {/* TODO: uncomment
               <TableBody>
-                {rows.length === 0 ? (
+                {playerRows.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={7}
@@ -520,27 +534,29 @@ export default function ScoringCalculator() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  rows.map((p, i) => (
+                  playerRows.map((p, i) => (
                     <TableRow key={p.name} hover>
                       <TableCell sx={{ color: "text.disabled", fontSize: 12 }}>
                         {i + 1}
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" sx={{fontWeight: 600}}>{p.name}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {p.name}
+                        </Typography>
                         <Typography variant="caption" color="text.secondary">
                           {p.team}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <PosChip pos={p.pos} />
+                        <PosChip pos={p.position} />
                       </TableCell>
                       <TableCell align="right">
                         <Typography
                           variant="body2"
                           color="text.secondary"
-                          //fontFamily="monospace" // TODO: here
+                          sx={{ fontFamily: "monospace" }}
                         >
-                          {p.before.toFixed(1)}
+                          {p.before.toFixed(0)}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -551,12 +567,13 @@ export default function ScoringCalculator() {
                       <TableCell align="right">
                         <Typography
                           variant="body2"
-                          sx = {{
-                            fontWeight: 600
-                            fontFamily: "monospace"
+                          sx={{
+                            fontWeight: 600,
+                            fontFamily: "monospace",
                           }}
                         >
-                          {p.after.toFixed(1)}
+                          {/* Sleeper's season total for a player only uses ints */}
+                          {p.after.toFixed(0)}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
@@ -566,30 +583,10 @@ export default function ScoringCalculator() {
                   ))
                 )}
               </TableBody>
-              */}
             </Table>
           </TableContainer>
         </Box>
       </Box>
     </>
   );
-}
-
-function calculatePlayerPoints(playerStats: Record<string, number>): number {
-  let points = 0;
-  (Object.entries(playerStats) as [string, number][]).forEach(
-    ([stat, statValue]) => {
-      let scoringSetting = 0.0; // scoringSettings.get(stat);
-      if (scoringSetting === undefined) {
-        alert(
-          "Scoring stat not found in settings: " +
-            stat +
-            ". Tell Michael he missed something...or Sleeper broke it.",
-        );
-      } else {
-        points += statValue * scoringSetting; // TODO: need to adjust this to match what Sleeper does, see old code
-      }
-    },
-  );
-  return points;
 }

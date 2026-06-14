@@ -10,7 +10,7 @@ interface ToolContainerProps {
 
 export default function ToolContainer({ currentTool }: ToolContainerProps) {
   let tool = <Home />;
-  if (true || currentTool === Tools.ScoringCalculator) {
+  if (currentTool === Tools.ScoringCalculator) {
     tool = <ScoringCalculator />;
   }
 
