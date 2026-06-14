@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public interface Tool {
   /**
    * Generate the JSON data string for this tool
+   *
    * @param objectMapper JSON serializer
    * @return JSON string
    */

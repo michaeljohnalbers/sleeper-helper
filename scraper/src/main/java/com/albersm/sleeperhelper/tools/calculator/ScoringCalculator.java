@@ -7,7 +7,6 @@ import com.albersm.sleeperhelper.tools.calculator.model.Main;
 import com.albersm.sleeperhelper.tools.calculator.model.Player;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -31,10 +30,12 @@ public class ScoringCalculator implements Tool {
       for (var playerEntry : roster.playerMap().values()) {
         var gameStats = sleeper.getPlayerGameStats(playerEntry.playerId(), sleeper.getYear() - 1);
         var seasonStats = calculateSeasonStats(gameStats);
-        var player = new Player(playerEntry.firstName() + " " + playerEntry.lastName(),
-            playerEntry.position(),
-            playerEntry.team(),
-            seasonStats);
+        var player =
+            new Player(
+                playerEntry.firstName() + " " + playerEntry.lastName(),
+                playerEntry.position(),
+                playerEntry.team(),
+                seasonStats);
 
         allRosteredPlayers.put(playerEntry.playerId(), player);
       }

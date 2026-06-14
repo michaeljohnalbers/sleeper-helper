@@ -1,4 +1,3 @@
 package com.albersm.sleeperhelper.model;
 
-public record Owner(String userName) {
-}
+public record Owner(String userName) {}
