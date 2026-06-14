@@ -1,11 +1,10 @@
-
 @import "playerStatsPopover.css";
 @import "teamTable.css";
 
 body {
   background-color: #181c28;
   color: #ffffff;
-  font-family: "Open Sans",Arial,Helvetica,sans-serif;
+  font-family: "Open Sans", Arial, Helvetica, sans-serif;
 }
 
 .topBox {
@@ -13,7 +12,8 @@ body {
   margin-bottom: 5px;
 }
 
-.plain_text {}
+.plain_text {
+}
 
 .error_text {
   color: red;

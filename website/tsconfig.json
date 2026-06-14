@@ -4,7 +4,7 @@
     "sourceMap": true,
     "noImplicitAny": true,
     "module": "node16",
-    "target": "es6",
+    "target": "es2024",
     "jsx": "react",
     "allowJs": true,
     "moduleResolution": "node16",
