@@ -21,7 +21,6 @@ public class Sleeper {
   private final HttpClient client = HttpClient.newHttpClient();
   private final String jwt;
   private final List<RosterDetails> rosterDetails = new ArrayList<>();
-  // private final int rosterSize;
   private final int year;
   private final LeagueIds leagueIds;
 
@@ -29,76 +28,7 @@ public class Sleeper {
     this.jwt = jwt;
     this.year = year;
 
-    // Map<String, PlayerIds> playerIds = getPlayerIds();
     this.leagueIds = getLeagueIds();
-    //        var leagueDetails = getLeagueDetail(currentLeagueId);
-    //        var allPlayerStats = getPlayerStats();
-    //        var leagueScoringSettings = getLeagueSettings(currentLeagueId);
-    //
-    //        this.rosterSize = leagueScoringSettings.rosterSize();
-    //
-    //        for (var user : leagueDetails.data().leagueUsers()) {
-    //            var rosterDetails = new RosterDetails(user.displayName(), user.userId(), new
-    // LinkedList<>());
-    //
-    //            for (var roster : leagueDetails.data().leagueRosters()) {
-    //                if (roster.ownerId().equals(rosterDetails.ownerId())) {
-    //                    for (var playerEntry : roster.playerMap().entrySet()) {
-    //                        String playerId = playerEntry.getKey();
-    //                        var pointsScored = calculatePlayerPointsScored(playerId,
-    // allPlayerStats,
-    //                                leagueScoringSettings.previousYearScoringSettings());
-    //
-    //                        PlayerIds playersIds = playerIds.get(playerId);
-    //                        if (null == playersIds) {
-    //                            throw new RuntimeException("No player Ids found for " + playerId);
-    //                        }
-    //
-    //                        Map<Integer, GameStats> playerGameStats = getPlayerGameStats(playerId,
-    // year-1);
-    //                        final Map<Integer, CalculatedGameStats> calculatedGameStats = new
-    // HashMap<>();
-    //                        playerGameStats.forEach((key, value) -> {
-    //                            if (value != null) {
-    //                                float totalPoints = calculatePointsScoredExact(value.stats(),
-    //                                        leagueScoringSettings.previousYearScoringSettings());
-    //                                calculatedGameStats.put(key, new
-    // CalculatedGameStats(value.stats(), value.week(), totalPoints));
-    //                            } else {
-    //                                calculatedGameStats.put(key, null);
-    //                            }
-    //                        });
-    //
-    //                        SleeperLeaguePlayer player = playerEntry.getValue();
-    //
-    //                        PlayerDetails playerDetails = new PlayerDetails(
-    //                                isActive(player.status()),
-    //                                formatName(player),
-    //                                Optional.ofNullable(player.position()).orElse(UNKNOWN),
-    //                                pointsScored,
-    //                                Optional.ofNullable(player.team()).orElse(NA),
-    //                                Optional.ofNullable(playersIds.yahooId()).orElse(-1),
-    //                                calculatedGameStats);
-    //                        rosterDetails.players().add(playerDetails);
-    //                    }
-    //
-    //                    rosterDetails.players().sort((a,b) -> {
-    //                        // Reverse sort (descending) points
-    //                        var pointsCompare = Integer.compare(b.pointsScored(),
-    // a.pointsScored());
-    //                        if (0 == pointsCompare) {
-    //                            return a.name().compareTo(b.name());
-    //                        }
-    //                        return pointsCompare;
-    //                    });
-    //
-    //                    break;
-    //                }
-    //            }
-    //            this.rosterDetails.add(rosterDetails);
-    //        }
-    //
-    //        rosterDetails.sort(Comparator.comparing(RosterDetails::owner));
   }
 
   public int getYear() {
@@ -109,50 +39,8 @@ public class Sleeper {
     return rosterDetails;
   }
 
-  //    public int getRosterSize() {
-  //        return rosterSize;
-  //    }
-
   private boolean isActive(String status) {
     return null != status && status.compareToIgnoreCase("active") == 0;
-  }
-
-  private int calculatePlayerPointsScored(
-      String playerId,
-      List<SleeperPlayerStats> allPlayerStats,
-      Map<String, Float> scoringSettings) {
-    for (var playerStats : allPlayerStats) {
-      if (playerStats.playerId().equals(playerId)) {
-        float pointsScored = 0.0F;
-
-        for (var scoringSetting : scoringSettings.entrySet()) {
-          var statValue = playerStats.stats().getOrDefault(scoringSetting.getKey(), 0.0F);
-          pointsScored += (statValue * scoringSetting.getValue());
-        }
-
-        return (int) Math.round(pointsScored);
-      }
-    }
-
-    throw new RuntimeException("No status found for player Id " + playerId);
-  }
-
-  private float calculatePointsScoredExact(
-      Map<String, Float> playerPointsCategories, Map<String, Float> scoringSettings) {
-    float pointsScored = 0.0F;
-
-    for (var scoringSetting : scoringSettings.entrySet()) {
-      var statValue = playerPointsCategories.getOrDefault(scoringSetting.getKey(), 0.0F);
-      pointsScored += (statValue * scoringSetting.getValue());
-    }
-
-    return pointsScored;
-  }
-
-  private String formatName(SleeperLeaguePlayer player) {
-    var firstName = Optional.ofNullable(player.firstName()).orElse(UNKNOWN);
-    var lastName = Optional.ofNullable(player.lastName()).orElse(UNKNOWN);
-    return firstName + " " + lastName;
   }
 
   private record LeagueIds(String currentLeagueId, String previousLeagueId) {}

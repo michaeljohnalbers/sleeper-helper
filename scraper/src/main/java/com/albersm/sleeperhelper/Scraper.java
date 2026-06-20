@@ -1,6 +1,5 @@
 package com.albersm.sleeperhelper;
 
-import com.albersm.sleeperhelper.model.*;
 import com.albersm.sleeperhelper.sleeper.Sleeper;
 import com.albersm.sleeperhelper.tools.calculator.ScoringCalculator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
