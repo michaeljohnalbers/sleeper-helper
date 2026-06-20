@@ -353,7 +353,9 @@ export default function ScoringCalculator() {
                               }}
                             />
                           </Tooltip>
-                          <Tooltip title="Revert to baseline">
+                          <Tooltip
+                            title={isChanged ? "Revert to baseline" : undefined}
+                          >
                             <span>
                               <IconButton
                                 size="small"
