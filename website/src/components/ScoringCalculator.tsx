@@ -319,30 +319,40 @@ export default function ScoringCalculator() {
                               {fmtVal(DEFAULT_SCORING_SETTINGS.get(s.statKey))}
                             </Typography>
                           )}
-                          <TextField
-                            size="small"
-                            type="number"
-                            value={scoring.get(s.statKey)}
-                            onChange={(e) =>
-                              handleInput(s.statKey, e.target.value)
+                          <Tooltip
+                            title={
+                              s.isPointsPerYard
+                                ? "1 point per " +
+                                  1.0 / scoring.get(s.statKey) +
+                                  " yds"
+                                : undefined
                             }
-                            slotProps={{
-                              htmlInput: {
-                                step: s.step,
-                                fontWeight: isChanged ? 600 : 400,
-                              },
-                            }}
-                            sx={{
-                              width: 82,
-                              "& .MuiOutlinedInput-root": isChanged
-                                ? {
-                                    "& fieldset": {
-                                      borderColor: "warning.main",
-                                    },
-                                  }
-                                : {},
-                            }}
-                          />
+                          >
+                            <TextField
+                              size="small"
+                              type="number"
+                              value={scoring.get(s.statKey)}
+                              onChange={(e) =>
+                                handleInput(s.statKey, e.target.value)
+                              }
+                              slotProps={{
+                                htmlInput: {
+                                  step: s.step,
+                                  fontWeight: isChanged ? 600 : 400,
+                                },
+                              }}
+                              sx={{
+                                width: 82,
+                                "& .MuiOutlinedInput-root": isChanged
+                                  ? {
+                                      "& fieldset": {
+                                        borderColor: "warning.main",
+                                      },
+                                    }
+                                  : {},
+                              }}
+                            />
+                          </Tooltip>
                           <Tooltip title="Revert to baseline">
                             <span>
                               <IconButton

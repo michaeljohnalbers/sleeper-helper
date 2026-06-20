@@ -40,6 +40,7 @@ on the localhost loop back as well as the public IP on the network. This server 
 made in the source will automatically be reloaded.
 
 ### Updating Scraped Data
+
 Copy the appropriate **.json** files from the scraper directory into the **src/data** directory.
 
 ## Production
