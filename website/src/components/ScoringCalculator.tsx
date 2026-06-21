@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   Accordion,
   AccordionDetails,
@@ -36,17 +36,14 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import {
   calculatePlayerPoints,
-  getPlayers,
-  getScoringCategories,
-  getScoringSettings,
+  ScoringCalculatorData,
 } from "../utils/scoring_calculator_helper";
-import { Player } from "../types/scoring_calculator";
+import { Main } from "../types/scoring_calculator";
 
-// ─── Sleeper Data ────────────────────────────────────────────────────────────
+// ─── Misc ─────────────────────────────────────────────────────────
+let scoringCalculatorData: ScoringCalculatorData = null;
 
-const SCORING_CATEGORIES = getScoringCategories();
-const DEFAULT_SCORING_SETTINGS = getScoringSettings();
-const PLAYERS: Map<string, Player> = getPlayers();
+const supportedPositions = ["QB", "RB", "WR", "TE", "K", "DEF"];
 
 function fmtVal(n: number) {
   return n % 1 === 0 ? String(n) : n.toFixed(2).replace(/\.?0+$/, "");
@@ -94,44 +91,45 @@ function PosChip({ pos }: { pos: string }) {
 // ─── Main component ──────────────────────────────────────────────────────────
 
 export default function ScoringCalculator() {
-  const [scoring, setScoring] = useState<Map<string, number>>(
-    DEFAULT_SCORING_SETTINGS,
-  );
+  const [scoring, setScoring] = useState<Map<string, number> | null>(null);
+  const [loading, setLoading] = useState<Boolean>(true);
+  const [jsonLoadError, setJsonLoadError] = useState<string | null>(null);
   const [changedStats, setChangedStats] = useState<Set<string>>(
     new Set<string>(),
   );
-
-  const supportedPositions = ["QB", "RB", "WR", "TE", "K", "DEF"];
 
   const [activePosSet, setActivePosSet] =
     useState<string[]>(supportedPositions);
   const [sortCol, setSortCol] = useState("after");
 
-  const handleInput = useCallback((stat: string, value: string) => {
-    let valueAsNumber: number = parseFloat(value) || 0;
+  const handleInput = useCallback(
+    (stat: string, value: string) => {
+      let valueAsNumber: number = parseFloat(value) || 0;
 
-    setScoring((prev) => {
-      const newState = new Map<string, number>(prev);
-      newState.set(stat, valueAsNumber);
-      return newState;
-    });
+      setScoring((prev) => {
+        const newState = new Map<string, number>(prev);
+        newState.set(stat, valueAsNumber);
+        return newState;
+      });
 
-    setChangedStats((prev) => {
-      const newState = new Set<string>(prev);
-      if (Math.abs(valueAsNumber - scoring.get(stat)) > 0.0001) {
-        newState.add(stat);
-      } else {
-        // For if the value is changed back to the default.
-        newState.delete(stat);
-      }
-      return newState;
-    });
-  }, []);
+      setChangedStats((prev) => {
+        const newState = new Set<string>(prev);
+        if (Math.abs(valueAsNumber - scoring.get(stat)) > 0.0001) {
+          newState.add(stat);
+        } else {
+          // For if the value is changed back to the default.
+          newState.delete(stat);
+        }
+        return newState;
+      });
+    },
+    [scoring],
+  );
 
   const handleRevert = useCallback((stat: string) => {
     setScoring((prev) => {
       const newState = new Map<string, number>(prev);
-      newState.set(stat, DEFAULT_SCORING_SETTINGS.get(stat));
+      newState.set(stat, scoringCalculatorData.getScoringSettings().get(stat));
       return newState;
     });
     setChangedStats((prev) => {
@@ -142,7 +140,7 @@ export default function ScoringCalculator() {
   }, []);
 
   const handleResetAll = () => {
-    setScoring(DEFAULT_SCORING_SETTINGS);
+    setScoring(scoringCalculatorData.getScoringSettings());
     setChangedStats(new Set<string>());
   };
 
@@ -150,24 +148,56 @@ export default function ScoringCalculator() {
     setActivePosSet(newVal);
   };
 
+  // This gets downloaded twice in dev because of <StrictMode> in index.tsx.
+  // Claude say it doesn't harm anything and won't happen in prod.
+  useEffect(() => {
+    console.log("Downloading JSON");
+    fetch("/scoring-calculator.json")
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+        return res.json();
+      })
+      .then((json: Main) => {
+        scoringCalculatorData = new ScoringCalculatorData(json);
+        console.log(
+          "JSON downloaded, setting scoring: " +
+            scoringCalculatorData.getScoringSettings(),
+        );
+        setScoring(scoringCalculatorData.getScoringSettings());
+      })
+      .catch((err) => setJsonLoadError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    // TODO: here
+    return <div>Loading...</div>;
+  }
+
+  if (jsonLoadError) {
+    alert("Error loading data: " + jsonLoadError);
+  }
+
   // Changes summary grouped by section
-  const changeSummary = SCORING_CATEGORIES.flatMap((category) =>
-    category.scoringStatData
-      .filter((s) => changedStats.has(s.statKey))
-      .map((s) => ({
-        label: s.label,
-        from: DEFAULT_SCORING_SETTINGS.get(s.statKey),
-        to: scoring.get(s.statKey),
-      })),
-  );
+  const changeSummary = scoringCalculatorData
+    .getScoringCategories()
+    .flatMap((category) =>
+      category.scoringStatData
+        .filter((s) => changedStats.has(s.statKey))
+        .map((s) => ({
+          label: s.label,
+          from: scoringCalculatorData.getScoringSettings().get(s.statKey),
+          to: scoring.get(s.statKey),
+        })),
+    );
 
   // Build leaderboard rows
-  const playerRows = [...PLAYERS.values()]
+  const playerRows = [...scoringCalculatorData.getPlayers().values()]
     .filter((p) => activePosSet.includes(p.position))
     .map((p) => {
       const beforePoints = calculatePlayerPoints(
         p.stats,
-        DEFAULT_SCORING_SETTINGS,
+        scoringCalculatorData.getScoringSettings(),
       );
       const afterPoints = calculatePlayerPoints(p.stats, scoring);
       return {
@@ -234,7 +264,7 @@ export default function ScoringCalculator() {
 
           {/* Scrollable settings */}
           <Box sx={{ flex: 1, overflowY: "auto" }}>
-            {SCORING_CATEGORIES.map((category) => {
+            {scoringCalculatorData.getScoringCategories().map((category) => {
               const sectionChanged = category.scoringStatData.filter((s) =>
                 changedStats.has(s.statKey),
               ).length;
@@ -316,7 +346,11 @@ export default function ScoringCalculator() {
                                 textAlign: "right",
                               }}
                             >
-                              {fmtVal(DEFAULT_SCORING_SETTINGS.get(s.statKey))}
+                              {fmtVal(
+                                scoringCalculatorData
+                                  .getScoringSettings()
+                                  .get(s.statKey),
+                              )}
                             </Typography>
                           )}
                           <Tooltip

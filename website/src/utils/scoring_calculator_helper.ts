@@ -1,18 +1,37 @@
 import { Main, Player } from "../types/scoring_calculator";
-import scoringCalculatorRawData from "../data/scoring-calculator.json";
-
-const scoringCalculatorData: Main = scoringCalculatorRawData;
-const leagueScoringSettings = scoringCalculatorData.league_scoring_settings;
-const rawPlayers = scoringCalculatorData.players;
 
 export {
+  ScoringCalculatorData,
   ScoringStatData,
   ScoringCategories,
   calculatePlayerPoints,
-  getPlayers,
-  getScoringCategories,
-  getScoringSettings,
 };
+
+class ScoringCalculatorData {
+  private readonly players: Map<string, Player>;
+  private readonly scoringCategories: ScoringCategory[];
+  private readonly scoringSettings: Map<string, number>;
+
+  constructor(json: Main) {
+    this.players = new Map<string, Player>(Object.entries(json.players));
+    this.scoringCategories = buildScoringStatData();
+    this.scoringSettings = new Map<string, number>(
+      Object.entries(json.league_scoring_settings),
+    );
+  }
+
+  public getPlayers(): Map<string, Player> {
+    return this.players;
+  }
+
+  public getScoringCategories(): ScoringCategory[] {
+    return this.scoringCategories;
+  }
+
+  public getScoringSettings(): Map<string, number> {
+    return this.scoringSettings;
+  }
+}
 
 function calculatePlayerPoints(
   playerStats: Record<string, number>,
@@ -28,18 +47,6 @@ function calculatePlayerPoints(
     },
   );
   return Math.round(points);
-}
-
-function getScoringCategories(): ScoringCategory[] {
-  return scoringCategories;
-}
-
-function getScoringSettings(): Map<string, number> {
-  return new Map<string, number>(Object.entries(leagueScoringSettings));
-}
-
-function getPlayers(): Map<string, Player> {
-  return new Map<string, Player>(Object.entries(rawPlayers));
 }
 
 // Matches the headings in Sleepers "Scoring Settings" dialog.
@@ -88,6 +95,9 @@ class ScoringStatData {
 /**
  * The order of the items in the arrays in this function directly affects
  * the order in which they are displayed.
+ *
+ * There isn't a good algorithmic way that I can see to convert the stats
+ * (i.e., "sack", "fgm_40_49", "pass_int", etc.) to a category and friendly name.
  */
 function buildScoringStatData(): ScoringCategory[] {
   /********************************************************
@@ -211,9 +221,3 @@ function buildScoringStatData(): ScoringCategory[] {
 
   return [passing, rushing, receiving, kicking, defense, std, stp, misc, bonus];
 }
-
-/**
- * There isn't a good algorithmic way that I can see to convert the stats
- * (i.e., "sack", "fgm_40_49", "pass_int", etc.) to a category and friendly name.
- */
-const scoringCategories = buildScoringStatData();

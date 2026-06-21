@@ -1,13 +1,19 @@
 const path = require("path");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   entry: "./src/index.tsx",
   plugins: [
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: "public", to: "." }, // copies public/* into dist/
+      ],
+    }),
     // Docs: https://webpack.js.org/plugins/html-webpack-plugin/
     new HtmlWebpackPlugin({
       title: "core.fantasy.football.league",
-      favicon: "src/icons/favicon.ico",
+      favicon: "icons/favicon.ico",
       meta: {
         viewport: "width=device-width, initial-scale=1",
       },
@@ -34,5 +40,10 @@ module.exports = {
     filename: "main.js",
     path: path.resolve(__dirname, "dist"),
     clean: true,
+  },
+  devServer: {
+    static: {
+      directory: path.resolve(__dirname, "public"),
+    },
   },
 };
