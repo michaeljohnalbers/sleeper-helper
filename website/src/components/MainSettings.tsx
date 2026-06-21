@@ -1,3 +1,4 @@
+import React from "react";
 import { useState } from "react";
 import type { MouseEvent } from "react";
 import {
@@ -8,12 +9,11 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
+import BrightnessMedium from "@mui/icons-material/BrightnessMedium";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import CheckIcon from "@mui/icons-material/Check";
-import React from "react";
-import { BrightnessMedium } from "@mui/icons-material";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

@@ -60,6 +60,23 @@ cd dist
 aws s3 sync . s3://core-fantasy.com
 ```
 
-## Diff JSON
+## Help
+If you get this warning
+```
+WARNING in asset size limit: The following asset(s) exceed the recommended size limit (244 KiB).
+This can impact web performance.
+Assets:
+  main.js (6.57 MiB)
 
-`diff -y <(jq '.' website/src/keeper_data.json) <(jq '.' website/src/keeper_data_updated.json) | less`
+WARNING in entrypoint size limit: The following entrypoint(s) combined asset size exceeds the recommended limit (244 KiB). This can impact web performance.
+Entrypoints:
+  main (6.57 MiB)
+      main.js
+```
+Run
+```
+grep -rn "from \"@mui/icons-material\"" src/
+grep -rn "from '@mui/icons-material'" src/
+```
+If any line looks like `import { Foo, Bar } from "@mui/icons-material"` (no specific path), that will affect it.
+Change to `import CheckIcon from "@mui/icons-material/Check";`
