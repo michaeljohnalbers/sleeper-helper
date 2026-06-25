@@ -149,10 +149,10 @@ export default function ScoringCalculator() {
   };
 
   // This gets downloaded twice in dev because of <StrictMode> in index.tsx.
-  // Claude say it doesn't harm anything and won't happen in prod.
+  // Claude says it doesn't harm anything and won't happen in prod.
   useEffect(() => {
     console.log("Downloading JSON");
-    fetch("/scoring-calculator.json")
+    fetch("scoring-calculator.json")
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
         return res.json();
@@ -170,8 +170,7 @@ export default function ScoringCalculator() {
   }, []);
 
   if (loading) {
-    // TODO: here
-    return <div>Loading...</div>;
+    return <div>Loading calculator data...</div>;
   }
 
   if (jsonLoadError) {

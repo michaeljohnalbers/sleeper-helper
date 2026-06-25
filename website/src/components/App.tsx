@@ -1,21 +1,22 @@
 import React, { useState } from "react";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import CssBaseline from "@mui/material/CssBaseline";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
 import {
-  AppBar,
-  Box,
-  CssBaseline,
-  IconButton,
-  Menu,
-  MenuItem,
-  Toolbar,
-  Typography,
+  createTheme,
+  ThemeProvider,
   useColorScheme,
-} from "@mui/material";
+} from "@mui/material/styles";
 import MenuIcon from "@mui/icons-material/Menu";
 import ToolContainer from "./ToolContainer";
 import { Tools } from "../types/misc";
 import { LEAGUE_NAME } from "../constants/global";
 import SettingsMenu from "./MainSettings";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 // This has to be a separate function to correctly set light/dark mode.
 // Why? I have no idea.
