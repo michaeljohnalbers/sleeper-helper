@@ -3,12 +3,11 @@
     "outDir": "./dist/",
     "sourceMap": true,
     "noImplicitAny": true,
-    "module": "node16",
-    "target": "es6",
+    "module": "esnext",
+    "target": "es2024",
     "jsx": "react",
     "allowJs": true,
-    "moduleResolution": "node16",
-    "resolveJsonModule": true,
+    "moduleResolution": "node",
     "allowSyntheticDefaultImports": true
   }
 }

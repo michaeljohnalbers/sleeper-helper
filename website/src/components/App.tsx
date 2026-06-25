@@ -1,63 +1,102 @@
-import React, {useState} from 'react';
-import keeper_data from '../keeper_data.json'
-import Team from "./Team";
-import TopBox from "./TopBox";
-import {TextDiv} from "./Text";
-import {KeeperData} from "../types/keeper_data";
+import React, { useState } from "react";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import CssBaseline from "@mui/material/CssBaseline";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import {
+  createTheme,
+  ThemeProvider,
+  useColorScheme,
+} from "@mui/material/styles";
+import MenuIcon from "@mui/icons-material/Menu";
+import ToolContainer from "./ToolContainer";
+import { Tools } from "../types/misc";
+import { LEAGUE_NAME } from "../constants/global";
+import SettingsMenu from "./MainSettings";
+
+// This has to be a separate function to correctly set light/dark mode.
+// Why? I have no idea.
+function MainApp() {
+  // Light/Dark mode
+  const { mode, setMode } = useColorScheme();
+  if (!mode) {
+    return <></>;
+  }
+
+  const tools = Object.values(Tools) as Tools[];
+  const [currentTool, setCurrentTool] = useState<Tools | null>(Tools.Home);
+
+  /*
+   * For hamburger menu in AppBar
+   */
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>): void => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = (tool: Tools): void => {
+    setAnchorEl(null);
+    setCurrentTool(tool);
+  };
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+      }}
+    >
+      <AppBar position="static">
+        <Toolbar>
+          <IconButton
+            size="large"
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            sx={{ mr: 2 }}
+            onClick={handleMenuOpen}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+          >
+            {tools.map((tool) => (
+              <MenuItem key={tool} onClick={() => handleMenuClose(tool)}>
+                <Typography>{tool}</Typography>
+              </MenuItem>
+            ))}
+          </Menu>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            {LEAGUE_NAME} Helper
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <SettingsMenu colorMode={mode} onColorModeChange={setMode} />
+          </Box>
+        </Toolbar>
+      </AppBar>
+      <ToolContainer currentTool={currentTool} />
+    </Box>
+  );
+}
+
+const theme = createTheme({
+  colorSchemes: {
+    dark: true,
+  },
+});
 
 export default function App() {
-    let visibilityMap = new Map([
-        ["QB", true],
-        ["RB", true],
-        ["WR", true],
-        ["TE", true],
-        ["K", true],
-        ["DEF", true],
-    ]);
-    const [visibleState, setVisibleState] = useState(visibilityMap)
-    let positionsArray: string[] = [];
-    visibilityMap.forEach((_: boolean, key: string)=>positionsArray.push(key));
-
-    function visibleCallback(position: string) {
-        let newVisibilityState = new Map(visibleState);
-        let visible = newVisibilityState.get(position);
-        newVisibilityState.set(position, ! visible);
-        setVisibleState(newVisibilityState);
-    }
-
-    let year = new Date().getFullYear() + 1;
-    // Find the first year with data. This is to make sure the site works after a year rolls over, but
-    // new data hasn't been generated.
-    let yearIndex;
-    do {
-        year--;
-        yearIndex = year.toString() as keyof typeof keeper_data;
-    } while (! (yearIndex in keeper_data));
-
-    const season: KeeperData = keeper_data[yearIndex]
-
-    const teamList= season.teams.map(team =>
-        <Team key={team.owner.user_name} teamData={team} salaryCap={season.cap.points} rosterSize={season.roster_size}
-              playerStatsKeys={season.metadata.player_stats_keys} visibilityMap={visibleState}/>
-    );
-
-    return(
-        <>
-            <div className="app">
-                <div className="appHeader">
-                    <TopBox year={year} cap={season.cap} visibilityMap={visibleState} callback={visibleCallback} />
-                </div>
-                <div className="appBody">
-                    <div className="teams">
-                        {teamList}
-                    </div>
-                </div>
-                <div className="appFooter">
-                    <TextDiv text={"Player data gathered on " + season.metadata.player_data_pull_date} className="footnote" />
-                    <TextDiv text={"Player round cost last updated on " + season.metadata.player_rankings_gen_date} className="footnote" />
-                    <TextDiv text={season.metadata.notes} className="footnote" />
-                </div>
-            </div>
-        </>
-    )
+  return (
+    <ThemeProvider theme={theme} noSsr>
+      <CssBaseline /> {/* Necessary to correctly propagate dark/light mode */}
+      <MainApp />
+    </ThemeProvider>
+  );
 }

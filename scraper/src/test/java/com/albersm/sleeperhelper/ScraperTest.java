@@ -1,4 +1,3 @@
 package com.albersm.sleeperhelper;
 
-public class ScraperTest {
-}
+public class ScraperTest {}
